@@ -1,7 +1,11 @@
 import axios from 'axios';
 
+// Production: use VITE_API_URL (e.g. https://inventory-x6ck.onrender.com/api/v1)
+// Development: use proxy /api/v1
+const baseURL = import.meta.env.VITE_API_URL || '/api/v1';
+
 const api = axios.create({
-  baseURL: '/api/v1',
+  baseURL,
   headers: { 'Content-Type': 'application/json' },
 });
 

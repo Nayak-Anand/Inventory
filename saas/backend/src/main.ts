@@ -1,10 +1,12 @@
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
+import { Request, Response } from 'express';
 import { AppModule } from './app.module';
 import { AllExceptionsFilter } from './common/http-exception.filter';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+  const expressApp = app.getHttpAdapter().getInstance();
   app.useGlobalFilters(new AllExceptionsFilter());
   app.useGlobalPipes(
     new ValidationPipe({
@@ -15,7 +17,7 @@ async function bootstrap() {
     }),
   );
   app.setGlobalPrefix('api/v1');
-  app.get('/', (_, res) =>
+  expressApp.get('/', (_req: Request, res: Response) =>
     res.json({ message: 'B2B Inventory API', api: '/api/v1', status: 'ok' }),
   );
   app.enableCors({ origin: process.env.CORS_ORIGIN || '*', credentials: true });

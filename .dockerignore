@@ -1,0 +1,9 @@
+node_modules
+dist
+.git
+*.md
+.env
+.env.local
+*.log
+saas/backend/node_modules
+saas/backend/dist

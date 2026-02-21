@@ -15,6 +15,9 @@ async function bootstrap() {
     }),
   );
   app.setGlobalPrefix('api/v1');
+  app.get('/', (_, res) =>
+    res.json({ message: 'B2B Inventory API', api: '/api/v1', status: 'ok' }),
+  );
   app.enableCors({ origin: process.env.CORS_ORIGIN || '*', credentials: true });
   const port = process.env.PORT || 3000;
   await app.listen(port);

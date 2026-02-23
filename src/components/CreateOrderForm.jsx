@@ -2,20 +2,19 @@ import { useState } from 'react';
 import { useStore } from '../context/StoreContext';
 import { useToast } from '../components/Toast';
 import { LoadingButton } from '../components/Loading';
-import AddCustomerDialog from '../components/AddCustomerDialog';
+import AddCustomerDialog from './AddCustomerDialog';
 import api from '../api/client';
 import { Plus, Trash2, UserPlus } from 'lucide-react';
 import { format } from 'date-fns';
 
-export default function CreateOrder() {
+/** Create Order form – use in drawer or standalone. Calls onSuccess(createdOrder) when done. */
+export default function CreateOrderForm({ onSuccess, onCancel, compact = false }) {
   const { products, customers } = useStore();
   const toast = useToast();
   const [customerId, setCustomerId] = useState('');
   const [showAddCustomer, setShowAddCustomer] = useState(false);
   const [orderDate, setOrderDate] = useState(format(new Date(), 'yyyy-MM-dd'));
   const [items, setItems] = useState([{ productId: '', quantity: 1, rate: 0, name: '', unit: 'pcs' }]);
-  const [success, setSuccess] = useState(false);
-  const [createdOrder, setCreatedOrder] = useState(null);
   const [submitting, setSubmitting] = useState(false);
 
   const addItem = () => {
@@ -71,7 +70,6 @@ export default function CreateOrder() {
           unit: i.unit || 'pcs',
         };
       });
-      // Combine selected date with current time so order date shows correct time
       const now = new Date();
       const [y, m, day] = orderDate.split('-').map(Number);
       const orderDateTime = new Date(y, m - 1, day, now.getHours(), now.getMinutes(), now.getSeconds());
@@ -81,9 +79,8 @@ export default function CreateOrder() {
         items: orderItems,
         taxAmount: 0,
       });
-      setCreatedOrder(data);
-      setSuccess(true);
       toast.success('Order created successfully');
+      onSuccess?.(data);
     } catch (err) {
       const errorMsg = err.response?.data?.message || err.message || 'Failed to create order';
       toast.error(errorMsg);
@@ -92,32 +89,14 @@ export default function CreateOrder() {
     }
   };
 
-  if (success && createdOrder) {
-    return (
-      <div className="space-y-6">
-        <div className="bg-green-50 border border-green-200 rounded-xl p-4">
-          <p className="font-semibold text-green-800">✓ Order created: {createdOrder.orderNumber}</p>
-          <p className="text-sm text-green-700 mt-1">Pending admin approval.</p>
-        </div>
-        <a
-          href="/orders"
-          className="inline-block bg-primary-500 hover:bg-primary-600 text-white px-6 py-3 rounded-xl font-medium"
-        >
-          View Orders
-        </a>
-      </div>
-    );
-  }
+  const formClass = compact ? 'space-y-4' : 'space-y-6';
 
   return (
-    <div className="space-y-6">
-      <h1 className="text-2xl font-bold">Create Order</h1>
-      <p className="text-gray-600">Create order for customer. Admin approval required before invoice.</p>
-
-      <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100 space-y-6">
+    <>
+      <div className={formClass}>
         <div className="grid sm:grid-cols-2 gap-4">
           <div>
-            <div className="flex items-center justify-between mb-1">
+            <div className="flex justify-between items-center mb-1">
               <label className="block text-sm font-medium text-gray-700">Customer *</label>
               <button
                 type="button"
@@ -125,7 +104,7 @@ export default function CreateOrder() {
                 className="flex items-center gap-1 text-sm text-primary-500 hover:text-primary-600 font-medium"
               >
                 <UserPlus size={16} />
-                Add Customer
+                Add
               </button>
             </div>
             <select
@@ -159,12 +138,12 @@ export default function CreateOrder() {
             <button
               type="button"
               onClick={addItem}
-              className="flex items-center gap-1 text-primary-500 hover:text-primary-600 font-medium"
+              className="flex items-center gap-1 text-primary-500 hover:text-primary-600 font-medium text-sm"
             >
               <Plus size={18} /> Add Item
             </button>
           </div>
-          <div className="space-y-3">
+          <div className="space-y-3 max-h-[280px] overflow-y-auto">
             {items.map((item, index) => (
               <div key={index} className="grid grid-cols-12 gap-2 items-end p-3 bg-gray-50 rounded-lg">
                 <div className="col-span-12 sm:col-span-5">
@@ -174,7 +153,7 @@ export default function CreateOrder() {
                     onChange={(e) => updateItem(index, 'productId', e.target.value)}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
                   >
-                    <option value="">Select product</option>
+                    <option value="">Select</option>
                     {products.map((p) => (
                       <option key={p.id} value={p.id}>
                         {p.name} - ₹{p.price}
@@ -204,7 +183,7 @@ export default function CreateOrder() {
                 </div>
                 <div className="col-span-3 sm:col-span-2">
                   <label className="block text-xs font-medium text-gray-600 mb-1">Amount</label>
-                  <p className="py-2 font-medium">₹{((item.quantity || 0) * (item.rate || 0)).toFixed(2)}</p>
+                  <p className="py-2 font-medium text-sm">₹{((item.quantity || 0) * (item.rate || 0)).toFixed(2)}</p>
                 </div>
                 <div className="col-span-1">
                   <button
@@ -221,29 +200,43 @@ export default function CreateOrder() {
         </div>
 
         <div className="border-t pt-4 flex justify-end">
-          <div className="w-64 text-right">
-            <div className="flex justify-between font-bold text-lg">
+          <div className="w-48 text-right">
+            <div className="flex justify-between font-bold">
               <span>Total:</span>
               <span>₹{subtotal.toFixed(2)}</span>
             </div>
           </div>
         </div>
 
-        <LoadingButton
-          onClick={handleCreate}
-          loading={submitting}
-          disabled={submitting}
-          className="w-full bg-primary-500 hover:bg-primary-600 text-white py-3 rounded-xl font-semibold disabled:opacity-70"
-        >
-          Create Order
-        </LoadingButton>
+        <div className="flex gap-2">
+          {onCancel && (
+            <button
+              type="button"
+              onClick={onCancel}
+              className="flex-1 px-4 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 font-medium"
+            >
+              Cancel
+            </button>
+          )}
+          <LoadingButton
+            onClick={handleCreate}
+            loading={submitting}
+            disabled={submitting}
+            className="flex-1 bg-primary-500 hover:bg-primary-600 text-white py-3 rounded-xl font-semibold disabled:opacity-70"
+          >
+            Create Order
+          </LoadingButton>
+        </div>
       </div>
 
       <AddCustomerDialog
         open={showAddCustomer}
         onClose={() => setShowAddCustomer(false)}
-        onSuccess={(newId) => { setCustomerId(newId); setShowAddCustomer(false); }}
+        onSuccess={(newId) => {
+          setCustomerId(newId);
+          setShowAddCustomer(false);
+        }}
       />
-    </div>
+    </>
   );
 }

@@ -1,19 +1,32 @@
 import { useState, useRef, useEffect } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, useLocation, useNavigate } from 'react-router-dom';
 import { useStore } from '../context/StoreContext';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../components/Toast';
 import Loading, { LoadingButton } from '../components/Loading';
 import { useReactToPrint } from 'react-to-print';
-import { FileText, Printer, ChevronLeft, CheckCircle, Clock, Download } from 'lucide-react';
+import { FileText, Printer, ChevronLeft, CheckCircle, Clock, Download, Receipt } from 'lucide-react';
 import InvoicePrint from '../components/InvoicePrint';
 import DateTimeCell from '../components/DateTimeCell';
 import { format } from 'date-fns';
 import { exportToCSV, exportToExcel } from '../utils/export';
+import CreateInvoice from './CreateInvoice';
 
 export default function Invoices() {
-  const { invoices, updateInvoice, loading } = useStore();
+  const { invoices, updateInvoice, loading, fetchData } = useStore();
   const { user } = useAuth();
+  const location = useLocation();
+  const navigate = useNavigate();
+  const isAdmin = user?.roleType === 'company_admin';
+  const activeTab = (location.pathname === '/invoices/create' && isAdmin) ? 'create' : 'list';
+
+  const setActiveTab = (tab) => {
+    if (tab === 'list') {
+      navigate('/invoices', { replace: true });
+    } else {
+      navigate('/invoices/create', { replace: true });
+    }
+  };
   const toast = useToast();
   const [searchParams] = useSearchParams();
   const [selectedInvoice, setSelectedInvoice] = useState(null);
@@ -254,16 +267,40 @@ export default function Invoices() {
     );
   }
 
-  if (loading && invoices.length === 0 && !selectedInvoice) {
+  if (activeTab === 'list' && loading && invoices.length === 0 && !selectedInvoice) {
     return <Loading text="Loading invoices..." />;
   }
 
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <h1 className="text-2xl font-bold">Invoices</h1>
+        <div className="flex items-center gap-4">
+          <h1 className="text-2xl font-bold">Invoices</h1>
+          {isAdmin && (
+            <div className="flex rounded-lg border border-gray-200 p-0.5 bg-gray-50">
+              <button
+                onClick={() => setActiveTab('list')}
+                className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                  activeTab === 'list' ? 'bg-white shadow text-gray-900' : 'text-gray-600 hover:text-gray-900'
+                }`}
+              >
+                <FileText size={18} />
+                Invoices
+              </button>
+              <button
+                onClick={() => setActiveTab('create')}
+                className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                  activeTab === 'create' ? 'bg-white shadow text-gray-900' : 'text-gray-600 hover:text-gray-900'
+                }`}
+              >
+                <Receipt size={18} />
+                Create Invoice
+              </button>
+            </div>
+          )}
+        </div>
         <div className="flex flex-wrap gap-2">
-          {sortedInvoices.length > 0 && (
+          {activeTab === 'list' && sortedInvoices.length > 0 && (
             <div className="flex gap-2">
               <button
                 onClick={() => handleExport('csv')}
@@ -283,18 +320,23 @@ export default function Invoices() {
               </button>
             </div>
           )}
-          <select
-            value={paymentFilter}
-            onChange={(e) => setPaymentFilter(e.target.value)}
-            className="px-4 py-2 border border-gray-300 rounded-lg max-w-[180px]"
-          >
-            <option value="all">All</option>
-            <option value="pending">Pending</option>
-            <option value="received">Received</option>
-          </select>
+          {activeTab === 'list' && (
+            <select
+              value={paymentFilter}
+              onChange={(e) => setPaymentFilter(e.target.value)}
+              className="px-4 py-2 border border-gray-300 rounded-lg max-w-[180px]"
+            >
+              <option value="all">All</option>
+              <option value="pending">Pending</option>
+              <option value="received">Received</option>
+            </select>
+          )}
         </div>
       </div>
 
+      {activeTab === 'create' && <CreateInvoice />}
+
+      {activeTab === 'list' && (
       <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full">
@@ -375,6 +417,7 @@ export default function Invoices() {
           </table>
         </div>
       </div>
+      )}
     </div>
   );
 }

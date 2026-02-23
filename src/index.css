@@ -59,6 +59,10 @@ body {
   }
 }
 
+.drawer-slide-in {
+  animation: slideInRight 0.25s ease-out;
+}
+
 @keyframes slideOutRight {
   from {
     transform: translateX(0);

@@ -1,13 +1,18 @@
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
+import { format } from 'date-fns';
 import api from '../api/client';
 import { useStore } from '../context/StoreContext';
+import { useAuth } from '../context/AuthContext';
 import { useToast } from '../components/Toast';
 import Loading, { LoadingButton } from '../components/Loading';
-import { FileText, CheckCircle, XCircle, Receipt } from 'lucide-react';
+import CreateOrderForm from '../components/CreateOrderForm';
+import { FileText, CheckCircle, XCircle, Receipt, Plus } from 'lucide-react';
 import DateTimeCell from '../components/DateTimeCell';
 
 export default function Orders() {
+  const [searchParams, setSearchParams] = useSearchParams();
+  const { user } = useAuth();
   const { fetchData } = useStore();
   const toast = useToast();
   const [orders, setOrders] = useState([]);
@@ -17,6 +22,7 @@ export default function Orders() {
   const [applyGstOnApprove, setApplyGstOnApprove] = useState(true);
   const [setDueDateOnApprove, setSetDueDateOnApprove] = useState(false);
   const [approveDueDate, setApproveDueDate] = useState('');
+  const [showCreateDrawer, setShowCreateDrawer] = useState(false);
 
   const fetchOrders = async () => {
     try {
@@ -33,6 +39,13 @@ export default function Orders() {
   useEffect(() => {
     fetchOrders();
   }, []);
+
+  useEffect(() => {
+    if (searchParams.get('create') === '1') {
+      setShowCreateDrawer(true);
+      setSearchParams({}, { replace: true });
+    }
+  }, [searchParams, setSearchParams]);
 
   const openApproveDialog = (order) => {
     setApproveOrder(order);
@@ -82,10 +95,26 @@ export default function Orders() {
 
   if (loading) return <Loading text="Loading orders..." />;
 
+  const canCreateOrder = ['company_admin', 'salesman', 'b2b_customer'].includes(user?.roleType);
+
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold">Orders</h1>
-      <p className="text-gray-600">Approve order to auto-create invoice. Invoice will appear in Invoices list.</p>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold">Orders</h1>
+          <p className="text-gray-600">Approve order to auto-create invoice. Invoice will appear in Invoices list.</p>
+        </div>
+        {canCreateOrder && (
+          <button
+            onClick={() => setShowCreateDrawer(true)}
+            className="flex items-center justify-center gap-2 bg-primary-500 hover:bg-primary-600 text-white px-4 py-3 rounded-xl font-medium shrink-0"
+          >
+            <Plus size={20} />
+            <span className="hidden sm:inline">Create Order</span>
+            <span className="sm:hidden">Create</span>
+          </button>
+        )}
+      </div>
 
       <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
         <div className="overflow-x-auto">
@@ -246,6 +275,40 @@ export default function Orders() {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Create Order side drawer */}
+      {showCreateDrawer && (
+        <>
+          <div
+            className="fixed inset-0 bg-black/40 z-40"
+            onClick={() => setShowCreateDrawer(false)}
+            aria-hidden="true"
+          />
+          <div className="fixed top-0 right-0 h-full w-full max-w-[60rem] bg-white shadow-xl z-50 flex flex-col drawer-slide-in">
+            <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200">
+              <h2 className="text-lg font-semibold">Create Order</h2>
+              <button
+                onClick={() => setShowCreateDrawer(false)}
+                className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg"
+                aria-label="Close"
+              >
+                <XCircle size={22} />
+              </button>
+            </div>
+            <div className="flex-1 overflow-y-auto p-4">
+              <CreateOrderForm
+                compact
+                onSuccess={(data) => {
+                  setShowCreateDrawer(false);
+                  fetchOrders();
+                  fetchData();
+                }}
+                onCancel={() => setShowCreateDrawer(false)}
+              />
+            </div>
+          </div>
+        </>
       )}
     </div>
   );

@@ -1,18 +1,32 @@
 import { useState } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
+import api from '../api/client';
 import { useStore } from '../context/StoreContext';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../components/Toast';
 import Loading, { LoadingButton } from '../components/Loading';
-import { Plus, Pencil, Trash2, Package, Download, AlertCircle } from 'lucide-react';
+import { Plus, Pencil, Trash2, Package, Download, AlertCircle, FolderOpen, X } from 'lucide-react';
 import { validateRequired, validatePositiveNumber, validateNumber } from '../utils/validation';
 import { exportToCSV, exportToExcel } from '../utils/export';
 import DateTimeCell from '../components/DateTimeCell';
 
 export default function Products() {
   const { user } = useAuth();
-  const { products, categories, addProduct, updateProduct, deleteProduct, loading } = useStore();
+  const { products, categories, addProduct, updateProduct, deleteProduct, fetchData, loading } = useStore();
   const toast = useToast();
   const canEditProducts = !user?.roleType || user?.roleType === 'company_admin';
+  const isAdmin = user?.roleType === 'company_admin';
+  const location = useLocation();
+  const navigate = useNavigate();
+  const activeTab = (location.pathname === '/products/categories' && isAdmin) ? 'categories' : 'products';
+
+  const setActiveTab = (tab) => {
+    if (tab === 'products') {
+      navigate('/products', { replace: true });
+    } else {
+      navigate('/products/categories', { replace: true });
+    }
+  };
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState(null);
   const [submitting, setSubmitting] = useState(false);
@@ -28,6 +42,9 @@ export default function Products() {
     minStock: '5',
     unit: 'pcs',
   });
+  const [catForm, setCatForm] = useState({ name: '', description: '' });
+  const [catShowForm, setCatShowForm] = useState(false);
+  const [catEditingId, setCatEditingId] = useState(null);
 
   const resetForm = () => {
     setForm({
@@ -164,6 +181,42 @@ export default function Products() {
 
   const lowStockProducts = products.filter((p) => (p.stock || 0) <= (p.minStock || 5));
 
+  const handleCatSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      if (catEditingId) {
+        await api.put(`/categories/${catEditingId}`, catForm);
+        toast.success('Category updated');
+      } else {
+        await api.post('/categories', catForm);
+        toast.success('Category added');
+      }
+      fetchData();
+      setCatForm({ name: '', description: '' });
+      setCatEditingId(null);
+      setCatShowForm(false);
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to save');
+    }
+  };
+
+  const handleCatEdit = (c) => {
+    setCatForm({ name: c.name, description: c.description || '' });
+    setCatEditingId(c.id);
+    setCatShowForm(true);
+  };
+
+  const handleCatDelete = async (id) => {
+    if (!confirm('Delete this category?')) return;
+    try {
+      await api.delete(`/categories/${id}`);
+      fetchData();
+      toast.success('Category deleted');
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to delete');
+    }
+  };
+
   if (loading && products.length === 0) {
     return <Loading text="Loading products..." />;
   }
@@ -171,9 +224,33 @@ export default function Products() {
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <h1 className="text-2xl font-bold">Products</h1>
+        <div className="flex items-center gap-4">
+          <h1 className="text-2xl font-bold">Products</h1>
+          {isAdmin && (
+            <div className="flex rounded-lg border border-gray-200 p-0.5 bg-gray-50">
+              <button
+                onClick={() => setActiveTab('products')}
+                className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                  activeTab === 'products' ? 'bg-white shadow text-gray-900' : 'text-gray-600 hover:text-gray-900'
+                }`}
+              >
+                <Package size={18} />
+                Products
+              </button>
+              <button
+                onClick={() => setActiveTab('categories')}
+                className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                  activeTab === 'categories' ? 'bg-white shadow text-gray-900' : 'text-gray-600 hover:text-gray-900'
+                }`}
+              >
+                <FolderOpen size={18} />
+                Categories
+              </button>
+            </div>
+          )}
+        </div>
         <div className="flex flex-wrap gap-2">
-          {products.length > 0 && (
+          {activeTab === 'products' && products.length > 0 && (
             <div className="flex gap-2">
               <button
                 onClick={() => handleExport('csv')}
@@ -193,7 +270,7 @@ export default function Products() {
               </button>
             </div>
           )}
-          {canEditProducts && (
+          {activeTab === 'products' && canEditProducts && (
             <button
               onClick={() => setShowForm(true)}
               className="flex items-center justify-center gap-2 bg-primary-500 hover:bg-primary-600 text-white px-4 py-3 rounded-xl font-medium"
@@ -203,12 +280,137 @@ export default function Products() {
               <span className="sm:hidden">Add</span>
             </button>
           )}
+          {activeTab === 'categories' && isAdmin && (
+            <button
+              onClick={() => setCatShowForm(true)}
+              className="flex items-center justify-center gap-2 bg-primary-500 hover:bg-primary-600 text-white px-4 py-3 rounded-xl font-medium"
+            >
+              <Plus size={20} />
+              Add Category
+            </button>
+          )}
         </div>
       </div>
 
-      {canEditProducts && showForm && (
-        <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
-          <h3 className="font-semibold mb-4">{editingId ? 'Edit Product' : 'Add Product'}</h3>
+      {activeTab === 'categories' && (
+        <>
+          {catShowForm && (
+            <div
+              className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4"
+              onClick={() => { setCatShowForm(false); setCatEditingId(null); setCatForm({ name: '', description: '' }); }}
+            >
+              <div className="bg-white rounded-xl shadow-lg p-6 max-w-md w-full" onClick={(e) => e.stopPropagation()}>
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="font-semibold text-lg">{catEditingId ? 'Edit Category' : 'Add Category'}</h3>
+                  <button
+                    onClick={() => { setCatShowForm(false); setCatEditingId(null); setCatForm({ name: '', description: '' }); }}
+                    className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg"
+                    aria-label="Close"
+                  >
+                    <X size={20} />
+                  </button>
+                </div>
+                <form onSubmit={handleCatSubmit} className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Name *</label>
+                    <input
+                      type="text"
+                      required
+                      value={catForm.name}
+                      onChange={(e) => setCatForm({ ...catForm, name: e.target.value })}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500"
+                      placeholder="e.g. Grocery, FMCG"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                    <textarea
+                      value={catForm.description}
+                      onChange={(e) => setCatForm({ ...catForm, description: e.target.value })}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500"
+                      rows="2"
+                    />
+                  </div>
+                  <div className="flex gap-2">
+                    <button type="submit" className="flex-1 bg-primary-500 hover:bg-primary-600 text-white py-3 rounded-lg font-medium">
+                      {catEditingId ? 'Update' : 'Save'}
+                    </button>
+                    <button type="button" onClick={() => { setCatShowForm(false); setCatEditingId(null); setCatForm({ name: '', description: '' }); }} className="px-6 py-3 border border-gray-300 rounded-lg hover:bg-gray-50">
+                      Cancel
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          )}
+          <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="bg-gray-50 border-b">
+                    <th className="text-left px-4 py-3 font-medium text-gray-700">Name</th>
+                    <th className="text-left px-4 py-3 font-medium text-gray-700 hidden md:table-cell">Description</th>
+                    <th className="text-left px-4 py-3 font-medium text-gray-700 hidden lg:table-cell">Created</th>
+                    <th className="text-left px-4 py-3 font-medium text-gray-700 hidden lg:table-cell">Last updated</th>
+                    <th className="text-right px-4 py-3 font-medium text-gray-700 w-24">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {categories.length === 0 ? (
+                    <tr>
+                      <td colSpan={5} className="px-4 py-12 text-center text-gray-500">
+                        <FolderOpen className="mx-auto mb-2 opacity-50" size={48} />
+                        <p>No categories yet. Add your first category above.</p>
+                      </td>
+                    </tr>
+                  ) : (
+                    categories.map((c) => (
+                      <tr key={c.id} className="border-b last:border-0 hover:bg-gray-50">
+                        <td className="px-4 py-3 font-medium">{c.name}</td>
+                        <td className="px-4 py-3 text-gray-600 hidden md:table-cell">{c.description || '-'}</td>
+                        <td className="px-4 py-3 text-gray-600 hidden lg:table-cell">
+                          <DateTimeCell value={c.createdAt} />
+                        </td>
+                        <td className="px-4 py-3 text-gray-600 hidden lg:table-cell">
+                          <DateTimeCell value={c.updatedAt} />
+                        </td>
+                        <td className="px-4 py-3">
+                          <div className="flex justify-end gap-2">
+                            <button onClick={() => handleCatEdit(c)} className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg">
+                              <Pencil size={18} />
+                            </button>
+                            <button onClick={() => handleCatDelete(c.id)} className="p-2 text-red-600 hover:bg-red-50 rounded-lg">
+                              <Trash2 size={18} />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </>
+      )}
+
+      {activeTab === 'products' && canEditProducts && showForm && (
+        <div
+          className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4"
+          onClick={resetForm}
+        >
+          <div className="bg-white rounded-xl shadow-lg max-w-2xl w-full max-h-[90vh] overflow-hidden flex flex-col" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 shrink-0">
+              <h3 className="font-semibold text-lg">{editingId ? 'Edit Product' : 'Add Product'}</h3>
+              <button
+                onClick={resetForm}
+                className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg"
+                aria-label="Close"
+              >
+                <X size={20} />
+              </button>
+            </div>
+            <div className="overflow-y-auto p-6">
           <form onSubmit={handleSubmit} className="grid sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Product Name *</label>
@@ -255,7 +457,7 @@ export default function Products() {
                 ))}
               </select>
               {categories.length === 0 && (
-                <p className="text-xs text-amber-600 mt-1">Add categories from Categories page first.</p>
+                <p className="text-xs text-amber-600 mt-1">Add categories from Categories tab first.</p>
               )}
             </div>
             <div>
@@ -386,10 +588,12 @@ export default function Products() {
               </button>
             </div>
           </form>
+            </div>
+          </div>
         </div>
       )}
 
-      {lowStockProducts.length > 0 && (
+      {activeTab === 'products' && lowStockProducts.length > 0 && (
         <div className="bg-amber-50 border border-amber-200 rounded-xl p-4">
           <p className="font-medium text-amber-800">⚠️ Low Stock ({lowStockProducts.length})</p>
           <p className="text-sm text-amber-700 mt-1">
@@ -398,6 +602,7 @@ export default function Products() {
         </div>
       )}
 
+      {activeTab === 'products' && (
       <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full">
@@ -482,6 +687,7 @@ export default function Products() {
           </table>
         </div>
       </div>
+      )}
     </div>
   );
 }

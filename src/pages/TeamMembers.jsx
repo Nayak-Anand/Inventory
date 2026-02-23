@@ -1,11 +1,24 @@
 import { useEffect, useState, useRef } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import api from '../api/client';
 import { useStore } from '../context/StoreContext';
-import { Users, Plus, Pencil, Trash2, UserCircle2, Camera } from 'lucide-react';
+import { Users, Plus, Pencil, Trash2, UserCircle2, Camera, BarChart3 } from 'lucide-react';
 import DateTimeCell from '../components/DateTimeCell';
+import SalesmanPerformance from './SalesmanPerformance';
 
 export default function TeamMembers() {
   const { customers } = useStore();
+  const location = useLocation();
+  const navigate = useNavigate();
+  const activeTab = location.pathname === '/team-members/performance' ? 'performance' : 'team';
+
+  const setActiveTab = (tab) => {
+    if (tab === 'team') {
+      navigate('/team-members', { replace: true });
+    } else {
+      navigate('/team-members/performance', { replace: true });
+    }
+  };
   const [team, setTeam] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
@@ -164,17 +177,43 @@ export default function TeamMembers() {
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <h1 className="text-2xl font-bold">Team Members</h1>
-        <button
-          onClick={() => setShowForm(true)}
-          className="flex items-center justify-center gap-2 bg-primary-500 hover:bg-primary-600 text-white px-4 py-3 rounded-xl font-medium"
-        >
-          <Plus size={20} />
-          Add Team Member
-        </button>
+        <div className="flex items-center gap-4">
+          <h1 className="text-2xl font-bold">Team Members</h1>
+          <div className="flex rounded-lg border border-gray-200 p-0.5 bg-gray-50">
+            <button
+              onClick={() => setActiveTab('team')}
+              className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                activeTab === 'team' ? 'bg-white shadow text-gray-900' : 'text-gray-600 hover:text-gray-900'
+              }`}
+            >
+              <Users size={18} />
+              Team Members
+            </button>
+            <button
+              onClick={() => setActiveTab('performance')}
+              className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                activeTab === 'performance' ? 'bg-white shadow text-gray-900' : 'text-gray-600 hover:text-gray-900'
+              }`}
+            >
+              <BarChart3 size={18} />
+              Salesman Performance
+            </button>
+          </div>
+        </div>
+        {activeTab === 'team' && (
+          <button
+            onClick={() => setShowForm(true)}
+            className="flex items-center justify-center gap-2 bg-primary-500 hover:bg-primary-600 text-white px-4 py-3 rounded-xl font-medium"
+          >
+            <Plus size={20} />
+            Add Team Member
+          </button>
+        )}
       </div>
 
-      {showForm && (
+      {activeTab === 'performance' && <SalesmanPerformance />}
+
+      {activeTab === 'team' && showForm && (
         <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
           <h3 className="font-semibold mb-4">{editingId ? 'Edit Team Member' : 'Add Team Member'}</h3>
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -361,6 +400,7 @@ export default function TeamMembers() {
         </div>
       )}
 
+      {activeTab === 'team' && (
       <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full">
@@ -435,6 +475,7 @@ export default function TeamMembers() {
           </table>
         </div>
       </div>
+      )}
     </div>
   );
 }

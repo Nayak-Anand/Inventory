@@ -50,20 +50,23 @@ const content = {
               <li><strong>Delete:</strong> Click trash icon and confirm</li>
               <li><strong>Export:</strong> Use Download button to export as CSV or Excel</li>
               <li><strong>Low Stock:</strong> Products with red badge need restocking</li>
-              <li><em>Add categories first under Categories page.</em></li>
+              <li><strong>Table:</strong> Last updated (date and time, 12hr AM/PM) is shown for each product.</li>
+              <li><strong>Categories tab:</strong> Admin can switch to the "Categories" tab (same page) to add/edit categories. Add categories first before adding products.</li>
             </ul>
           </>
         ),
       },
       {
-        title: '3. Categories',
+        title: '3. Categories (tab in Products)',
         body: (
           <>
-            <p><strong>What it is:</strong> Categories to organize products. Admin only.</p>
+            <p><strong>What it is:</strong> Categories to organize products. Available as a tab on the Products page. Admin only.</p>
             <p><strong>How to use:</strong></p>
             <ul className="list-disc pl-5 space-y-1">
+              <li>Go to <strong>Products</strong> page → switch to <strong>"Categories"</strong> tab</li>
               <li><strong>Add Category:</strong> "Add Category" → fill Name and Description → Save</li>
               <li><strong>Edit/Delete:</strong> Use pencil or trash icon</li>
+              <li><strong>Table:</strong> Created and Last updated (date and time, 12hr AM/PM) are shown for each category.</li>
               <li>These will appear in the Category dropdown when adding/editing Products</li>
             </ul>
           </>
@@ -80,6 +83,7 @@ const content = {
               <li>Use avatar button to add profile photo</li>
               <li><strong>Edit/Delete:</strong> Use pencil or trash icon</li>
               <li><strong>Export:</strong> Download as CSV or Excel</li>
+              <li><strong>Table:</strong> Created and Last updated (date and time, 12hr AM/PM) are shown for each customer.</li>
               <li>You must select a customer when creating an Invoice or Order</li>
             </ul>
           </>
@@ -110,6 +114,7 @@ const content = {
               <li><strong>Admin:</strong> Click "Approve" → invoice is created automatically and appears in Invoices</li>
               <li>"Reject" cancels the order</li>
               <li>"View Invoice" shows the created invoice</li>
+              <li><strong>Table:</strong> Order date and Approved at show date with time below (12hr AM/PM).</li>
             </ul>
           </>
         ),
@@ -118,11 +123,12 @@ const content = {
         title: '7. Create Order',
         body: (
           <>
-            <p><strong>What it is:</strong> Form to create new order. Salesman and B2B Customer can use it.</p>
+            <p><strong>What it is:</strong> Create new order from the Orders page. Opens in a side drawer. Salesman and B2B Customer can use it.</p>
             <p><strong>How to use:</strong></p>
             <ul className="list-disc pl-5 space-y-1">
+              <li>Go to <strong>Orders</strong> page → click <strong>"Create Order"</strong> button (or use "Create New Order" from Dashboard)</li>
               <li>Select customer</li>
-              <li>Choose date</li>
+              <li>Choose date – the order is saved with that date and the current time (so date and time show correctly in Orders table)</li>
               <li>Select product, enter Quantity and Rate (Rate may auto-fill from product price)</li>
               <li>Use "+" to add more items, "−" to remove</li>
               <li>Click "Create Order" → order is created; Admin must approve it</li>
@@ -131,12 +137,31 @@ const content = {
         ),
       },
       {
-        title: '8. Create Bill / Create Invoice',
+        title: '8. Invoices',
         body: (
           <>
-            <p><strong>What it is:</strong> Create invoice directly. Admin only.</p>
+            <p><strong>What it is:</strong> List of all invoices – view, print, mark paid, export. Admin can also create invoices from the Create Invoice tab.</p>
             <p><strong>How to use:</strong></p>
             <ul className="list-disc pl-5 space-y-1">
+              <li><strong>Tabs:</strong> Admin sees "Invoices" and "Create Invoice" tabs. Switch to Create Invoice to create a new bill.</li>
+              <li><strong>Filter:</strong> Use All, Pending or Received</li>
+              <li><strong>View:</strong> Click invoice to see details</li>
+              <li><strong>Print:</strong> Use print icon to print or save as PDF</li>
+              <li><strong>Mark as Paid:</strong> On pending invoice click "Mark Paid" → enter Received Date → Confirm. The exact date and time of marking paid are saved and shown under Status (12hr AM/PM).</li>
+              <li><strong>Table:</strong> Date, Due Date and Status show date with time below. For Received invoices, the paid date and time appear under the status.</li>
+              <li><strong>Export:</strong> Download all invoices as CSV or Excel</li>
+            </ul>
+          </>
+        ),
+      },
+      {
+        title: '9. Create Invoice (tab in Invoices)',
+        body: (
+          <>
+            <p><strong>What it is:</strong> Create invoice directly. Available as a tab on the Invoices page. Admin only.</p>
+            <p><strong>How to use:</strong></p>
+            <ul className="list-disc pl-5 space-y-1">
+              <li>Go to <strong>Invoices</strong> page → switch to <strong>"Create Invoice"</strong> tab</li>
               <li>Select customer</li>
               <li>Set Invoice Date and Due Date</li>
               <li>Choose GST Rate and GST Type (CGST+SGST or IGST)</li>
@@ -144,22 +169,6 @@ const content = {
               <li>Use "+" to add more items</li>
               <li>Click "Create Invoice" → invoice is created and print preview appears</li>
               <li>Use Print button to print or save as PDF</li>
-            </ul>
-          </>
-        ),
-      },
-      {
-        title: '9. Invoices',
-        body: (
-          <>
-            <p><strong>What it is:</strong> List of all invoices – view, print, mark paid, export.</p>
-            <p><strong>How to use:</strong></p>
-            <ul className="list-disc pl-5 space-y-1">
-              <li><strong>Filter:</strong> Use All, Pending or Received</li>
-              <li><strong>View:</strong> Click invoice to see details</li>
-              <li><strong>Print:</strong> Use print icon to print or save as PDF</li>
-              <li><strong>Mark as Paid:</strong> On pending invoice click "Mark Paid" → enter Received Date → Confirm</li>
-              <li><strong>Export:</strong> Download all invoices as CSV or Excel</li>
             </ul>
           </>
         ),
@@ -183,25 +192,28 @@ const content = {
         title: '11. Team Members',
         body: (
           <>
-            <p><strong>What it is:</strong> Add/edit Salesmen and other team members. Admin only.</p>
+            <p><strong>What it is:</strong> Add/edit Salesmen and other team members. Salesman Performance is available as a tab. Admin only.</p>
             <p><strong>How to use:</strong></p>
             <ul className="list-disc pl-5 space-y-1">
+              <li><strong>Tabs:</strong> Switch between "Team Members" and "Salesman Performance" to manage team or view sales data.</li>
               <li><strong>Add Member:</strong> "Add Member" → fill Name, Mobile, Email, Password, Role (Salesman)</li>
               <li><strong>Assigned Customers:</strong> Select which customers this salesman can see</li>
               <li><strong>Edit/Delete:</strong> Use pencil or trash icon</li>
               <li><strong>Reset Password:</strong> Click member → "Reset Password" to set new password</li>
               <li>You can also upload avatar photo</li>
+              <li><strong>Table:</strong> Created and Last updated (date and time, 12hr AM/PM) are shown for each member.</li>
             </ul>
           </>
         ),
       },
       {
-        title: '12. Salesman Performance',
+        title: '12. Salesman Performance (tab in Team)',
         body: (
           <>
-            <p><strong>What it is:</strong> Sales details for each Salesman. Admin only.</p>
+            <p><strong>What it is:</strong> Sales details for each Salesman. Available as a tab on the Team Members page. Admin only.</p>
             <p><strong>How to use:</strong></p>
             <ul className="list-disc pl-5 space-y-1">
+              <li>Go to <strong>Team</strong> page → switch to <strong>"Salesman Performance"</strong> tab</li>
               <li>Set date range using From Date and To Date</li>
               <li>Use search box to find salesman</li>
               <li>List shows Total Sales, Orders, Invoices</li>
@@ -235,6 +247,7 @@ const content = {
               <li><strong>Salesman:</strong> Can view Products, Customers, Orders. Can create orders. Limited to assigned customers</li>
               <li><strong>B2B Customer:</strong> Can view Products, Orders and create orders</li>
             </ul>
+            <p><strong>Date & time in tables:</strong> Where dates are shown, the time appears below the date in 12-hour format (e.g. 2:30 PM). Created / Last updated columns appear in Products, Categories, Customers, Orders, Invoices and Team Members where applicable.</p>
             <p><strong>If you face issues:</strong> Re-read this Help page. If problem persists, contact support.</p>
           </>
         ),
@@ -252,11 +265,11 @@ const content = {
       { title: '5. आपूर्तिकर्ता (Suppliers)', body: null },
       { title: '6. ऑर्डर (Orders)', body: null },
       { title: '7. ऑर्डर बनाएं (Create Order)', body: null },
-      { title: '8. बिल बनाएं (Create Invoice)', body: null },
-      { title: '9. इनवॉइस (Invoices)', body: null },
+      { title: '8. इनवॉइस (Invoices)', body: null },
+      { title: '9. इनवॉइस बनाएं (Create Invoice)', body: null },
       { title: '10. रिपोर्ट (Reports)', body: null },
       { title: '11. टीम (Team Members)', body: null },
-      { title: '12. सॉल्समैन परफॉर्मेंस', body: null },
+      { title: '12. सॉल्समैन परफॉर्मेंस (tab in Team)', body: null },
       { title: '13. सेटिंग्स (Settings)', body: null },
       { title: 'सामान्य बातें (General Tips)', body: null },
     ],
@@ -286,17 +299,20 @@ content.hi.sections[1].body = (
       <li><strong>Edit:</strong> पेंसिल आइकन पर क्लिक करें, बदलाव करें</li>
       <li><strong>Delete:</strong> कचरा आइकन पर क्लिक करें और confirm करें</li>
       <li><strong>Export:</strong> Download बटन से CSV या Excel में डाउनलोड करें</li>
-      <li>Categories पहले Categories पेज में जोड़ें</li>
+      <li><strong>टेबल:</strong> हर product के लिए Last updated (तारीख और समय, 12hr AM/PM) दिखता है।</li>
+      <li><strong>Categories टैब:</strong> Admin "Categories" टैब से categories add/edit कर सकता है। Products जोड़ने से पहले categories जोड़ें।</li>
     </ul>
   </>
 );
 content.hi.sections[2].body = (
   <>
-    <p><strong>क्या है:</strong> Products को organize करने के लिए categories। सिर्फ Admin देख सकता है।</p>
+    <p><strong>क्या है:</strong> Products को organize करने के लिए categories। Products पेज पर टैब के रूप में। सिर्फ Admin देख सकता है।</p>
     <p><strong>कैसे इस्तेमाल करें:</strong></p>
     <ul className="list-disc pl-5 space-y-1">
+      <li><strong>Products</strong> पेज पर जाएं → <strong>"Categories"</strong> टैब पर क्लिक करें</li>
       <li><strong>Add Category:</strong> Name और Description भरें → Save</li>
       <li><strong>Edit/Delete:</strong> पेंसिल या कचरा आइकन से करें</li>
+      <li><strong>टेबल:</strong> हर category के लिए Created और Last updated (तारीख और समय, 12hr AM/PM) दिखते हैं।</li>
       <li>Products में Add/Edit करते समय Category dropdown में दिखेंगे</li>
     </ul>
   </>
@@ -309,6 +325,7 @@ content.hi.sections[3].body = (
       <li><strong>Add Customer:</strong> Name, Phone, Email, Address, GSTIN, Credit Limit भरें</li>
       <li>Photo के लिए avatar बटन इस्तेमाल करें</li>
       <li><strong>Edit/Delete:</strong> पेंसिल या कचरा आइकन से करें</li>
+      <li><strong>टेबल:</strong> हर customer के लिए Created और Last updated (तारीख और समय, 12hr AM/PM) दिखते हैं।</li>
       <li>इनवॉइस या Order बनाते समय Customer select जरूरी है</li>
     </ul>
   </>
@@ -331,15 +348,17 @@ content.hi.sections[5].body = (
       <li>ग्राहक/सॉल्समैन <strong>Create Order</strong> से ऑर्डर देता है</li>
       <li><strong>Admin:</strong> "Approve" पर क्लिक करें → इनवॉइस अपने आप बन जाएगी</li>
       <li>"Reject" से ऑर्डर रद्द हो जाता है</li>
+      <li><strong>टेबल:</strong> Order date और Approved at तारीख के नीचे समय (12hr AM/PM) के साथ दिखते हैं।</li>
     </ul>
   </>
 );
 content.hi.sections[6].body = (
   <>
-    <p><strong>क्या है:</strong> नया ऑर्डर बनाने का फॉर्म। Salesman और B2B Customer भी इस्तेमाल कर सकते हैं।</p>
+    <p><strong>क्या है:</strong> Orders पेज से नया ऑर्डर बनाएं। साइड ड्रॉअर में खुलता है। Salesman और B2B Customer भी इस्तेमाल कर सकते हैं।</p>
     <p><strong>कैसे इस्तेमाल करें:</strong></p>
     <ul className="list-disc pl-5 space-y-1">
-      <li>Customer select करें, Date चुनें</li>
+      <li><strong>Orders</strong> पेज पर जाएं → <strong>"Create Order"</strong> बटन क्लिक करें (या Dashboard से "Create New Order" इस्तेमाल करें)</li>
+      <li>Customer select करें, Date चुनें – ऑर्डर उसी तारीख और उस समय के साथ सेव होता है (Orders टेबल में सही date/time दिखता है)</li>
       <li>Product select करें, Quantity और Rate भरें</li>
       <li>"+" से items जोड़ें, "−" से हटाएं</li>
       <li>"Create Order" क्लिक करें → Admin को Approve करना होगा</li>
@@ -348,24 +367,27 @@ content.hi.sections[6].body = (
 );
 content.hi.sections[7].body = (
   <>
-    <p><strong>क्या है:</strong> सीधे इनवॉइस बनाना। सिर्फ Admin कर सकता है।</p>
+    <p><strong>क्या है:</strong> सभी इनवॉइस की लिस्ट – देखें, print करें, paid मार्क करें, export करें। Admin Create Invoice टैब से नया बिल भी बना सकता है।</p>
     <p><strong>कैसे इस्तेमाल करें:</strong></p>
     <ul className="list-disc pl-5 space-y-1">
-      <li>Customer select करें, Invoice Date और Due Date सेट करें</li>
-      <li>GST Rate और GST Type (CGST+SGST या IGST) चुनें</li>
-      <li>Product select करें, Quantity और Rate भरें</li>
-      <li>"Create Invoice" क्लिक करें → print preview दिखेगा</li>
+      <li><strong>टैब:</strong> Admin को "Invoices" और "Create Invoice" टैब दिखते हैं। नया बिल बनाने के लिए Create Invoice टैब पर जाएं।</li>
+      <li><strong>Filter:</strong> All, Pending या Received से filter करें</li>
+      <li><strong>Mark as Paid:</strong> Pending इनवॉइस पर "Mark Paid" → Received Date दें। Paid मार्क करने की सही तारीख और समय Status के नीचे दिखता है (12hr AM/PM)।</li>
+      <li><strong>टेबल:</strong> Date, Due Date और Status के नीचे तारीख और समय दिखता है। Received इनवॉइस में paid की तारीख और समय status के नीचे दिखते हैं।</li>
+      <li><strong>Export:</strong> CSV या Excel में डाउनलोड करें</li>
     </ul>
   </>
 );
 content.hi.sections[8].body = (
   <>
-    <p><strong>क्या है:</strong> सभी इनवॉइस की लिस्ट – देखें, print करें, paid मार्क करें, export करें।</p>
+    <p><strong>क्या है:</strong> सीधे इनवॉइस बनाना। Invoices पेज पर टैब के रूप में। सिर्फ Admin कर सकता है।</p>
     <p><strong>कैसे इस्तेमाल करें:</strong></p>
     <ul className="list-disc pl-5 space-y-1">
-      <li><strong>Filter:</strong> All, Pending या Received से filter करें</li>
-      <li><strong>Mark as Paid:</strong> Pending इनवॉइस पर "Mark Paid" → Received Date दें</li>
-      <li><strong>Export:</strong> CSV या Excel में डाउनलोड करें</li>
+      <li><strong>Invoices</strong> पेज पर जाएं → <strong>"Create Invoice"</strong> टैब पर क्लिक करें</li>
+      <li>Customer select करें, Invoice Date और Due Date सेट करें</li>
+      <li>GST Rate और GST Type (CGST+SGST या IGST) चुनें</li>
+      <li>Product select करें, Quantity और Rate भरें</li>
+      <li>"Create Invoice" क्लिक करें → print preview दिखेगा</li>
     </ul>
   </>
 );
@@ -381,20 +403,23 @@ content.hi.sections[9].body = (
 );
 content.hi.sections[10].body = (
   <>
-    <p><strong>क्या है:</strong> Salesman और टीम मेम्बर्स add/edit करना। सिर्फ Admin देख सकता है।</p>
+    <p><strong>क्या है:</strong> Salesman और टीम मेम्बर्स add/edit करना। Salesman Performance टैब में उपलब्ध है। सिर्फ Admin देख सकता है।</p>
     <p><strong>कैसे इस्तेमाल करें:</strong></p>
     <ul className="list-disc pl-5 space-y-1">
+      <li><strong>टैब:</strong> "Team Members" और "Salesman Performance" के बीच switch करें – टीम manage करें या sales data देखें।</li>
       <li><strong>Add Member:</strong> Name, Mobile, Email, Password, Role भरें</li>
       <li><strong>Assigned Customers:</strong> Salesman को कौन-कौन से customers दिखाने हैं select करें</li>
       <li><strong>Reset Password:</strong> Member पर क्लिक करके नया पासवर्ड सेट करें</li>
+      <li><strong>टेबल:</strong> हर member के लिए Created और Last updated (तारीख और समय, 12hr AM/PM) दिखते हैं।</li>
     </ul>
   </>
 );
 content.hi.sections[11].body = (
   <>
-    <p><strong>क्या है:</strong> हर Salesman के sales का विवरण। सिर्फ Admin देख सकता है।</p>
+    <p><strong>क्या है:</strong> हर Salesman के sales का विवरण। Team Members पेज पर टैब के रूप में। सिर्फ Admin देख सकता है।</p>
     <p><strong>कैसे इस्तेमाल करें:</strong></p>
     <ul className="list-disc pl-5 space-y-1">
+      <li><strong>Team</strong> पेज पर जाएं → <strong>"Salesman Performance"</strong> टैब पर क्लिक करें</li>
       <li>From Date और To Date से date range चुनें</li>
       <li>Search से salesman ढूंढें, सूची में Total Sales, Orders दिखते हैं</li>
       <li>किसी salesman पर क्लिक करने पर order-wise details दिखते हैं</li>
@@ -420,6 +445,7 @@ content.hi.sections[13].body = (
       <li><strong>Salesman:</strong> Products, Customers, Orders देख सकता है, Order बना सकता है</li>
       <li><strong>B2B Customer:</strong> Products, Orders देख सकता है और Order बना सकता है</li>
     </ul>
+    <p><strong>टेबल में तारीख और समय:</strong> जहाँ तारीख दिखती है, उसके नीचे समय 12-hour फॉर्मैट में (जैसे 2:30 PM) दिखता है। Products, Categories, Customers, Orders, Invoices और Team Members में जहाँ लागू हो वहाँ Created / Last updated कॉलम दिखते हैं।</p>
     <p><strong>समस्या आने पर:</strong> इस Help पेज को दोबारा पढ़ें। फिर भी issue हो तो support से संपर्क करें।</p>
   </>
 );

@@ -1,4 +1,5 @@
 import { useState, useRef } from 'react';
+import { Link } from 'react-router-dom';
 import { useStore } from '../context/StoreContext';
 import { useToast } from '../components/Toast';
 import { LoadingButton } from '../components/Loading';
@@ -201,6 +202,12 @@ export default function CreateInvoice() {
           >
             Create Another
           </button>
+          <Link
+            to="/invoices"
+            className="inline-block border border-gray-300 px-6 py-3 rounded-xl hover:bg-gray-50 font-medium"
+          >
+            View Invoices
+          </Link>
         </div>
 
         <div className="bg-white rounded-xl shadow-sm border p-6">

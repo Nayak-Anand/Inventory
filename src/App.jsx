@@ -11,13 +11,9 @@ import Dashboard from './pages/Dashboard';
 import Products from './pages/Products';
 import Customers from './pages/Customers';
 import Suppliers from './pages/Suppliers';
-import CreateInvoice from './pages/CreateInvoice';
 import Invoices from './pages/Invoices';
-import Categories from './pages/Categories';
 import Orders from './pages/Orders';
-import CreateOrder from './pages/CreateOrder';
 import TeamMembers from './pages/TeamMembers';
-import SalesmanPerformance from './pages/SalesmanPerformance';
 import Reports from './pages/Reports';
 import Settings from './pages/Settings';
 import Help from './pages/Help';
@@ -25,16 +21,15 @@ import Help from './pages/Help';
 const pathRoles = {
   '/': ['company_admin', 'salesman', 'b2b_customer'],
   '/products': ['company_admin', 'salesman', 'b2b_customer'],
-  '/categories': ['company_admin'],
+  '/products/categories': ['company_admin'],
   '/customers': ['company_admin', 'salesman'],
   '/suppliers': ['company_admin'],
   '/orders': ['company_admin', 'salesman', 'b2b_customer'],
-  '/create-order': ['company_admin', 'salesman', 'b2b_customer'],
-  '/create-invoice': ['company_admin'],
   '/invoices': ['company_admin', 'salesman', 'b2b_customer'],
+  '/invoices/create': ['company_admin'],
   '/reports': ['company_admin', 'salesman'],
   '/team-members': ['company_admin'],
-  '/salesman-performance': ['company_admin'],
+  '/team-members/performance': ['company_admin'],
   '/settings': ['company_admin'],
   '/help': ['company_admin', 'salesman', 'b2b_customer'],
 };
@@ -83,15 +78,14 @@ function App() {
                         <Routes>
                           <Route path="/" element={<Dashboard />} />
                           <Route path="/products" element={<Products />} />
-                          <Route path="/categories" element={<Categories />} />
+                          <Route path="/products/categories" element={<Products />} />
                           <Route path="/customers" element={<Customers />} />
                           <Route path="/suppliers" element={<Suppliers />} />
                           <Route path="/orders" element={<Orders />} />
-                          <Route path="/create-order" element={<CreateOrder />} />
-                          <Route path="/create-invoice" element={<CreateInvoice />} />
                           <Route path="/invoices" element={<Invoices />} />
+                          <Route path="/invoices/create" element={<Invoices />} />
                           <Route path="/team-members" element={<TeamMembers />} />
-                          <Route path="/salesman-performance" element={<SalesmanPerformance />} />
+                          <Route path="/team-members/performance" element={<TeamMembers />} />
                           <Route path="/reports" element={<Reports />} />
                           <Route path="/settings" element={<Settings />} />
                           <Route path="/help" element={<Help />} />

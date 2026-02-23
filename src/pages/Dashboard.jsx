@@ -97,14 +97,14 @@ export default function Dashboard() {
 
       {user?.roleType === 'company_admin' ? (
         <Link
-          to="/create-invoice"
+          to="/invoices/create"
           className="block w-full py-4 bg-primary-500 hover:bg-primary-600 text-white font-semibold rounded-xl text-center transition-colors"
         >
           + Create New Invoice
         </Link>
       ) : (
         <Link
-          to="/create-order"
+          to="/orders?create=1"
           className="block w-full py-4 bg-primary-500 hover:bg-primary-600 text-white font-semibold rounded-xl text-center transition-colors"
         >
           + Create New Order

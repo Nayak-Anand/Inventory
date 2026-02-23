@@ -37,7 +37,13 @@ export function StoreProvider({ children }) {
         api.get('/suppliers').catch(() => ({ data: [] })),
         api.get('/settings').catch(() => ({ data: null })),
       ]);
-      setCategories((categoriesRes.data || []).map((c) => ({ id: c.id || c._id, name: c.name })));
+      setCategories((categoriesRes.data || []).map((c) => ({
+        id: c.id || c._id?.toString(),
+        name: c.name,
+        description: c.description,
+        createdAt: c.createdAt,
+        updatedAt: c.updatedAt,
+      })));
       setProducts((itemsRes.data?.data || itemsRes.data || []).map((p) => ({
         id: p.id || p._id,
         name: p.name,

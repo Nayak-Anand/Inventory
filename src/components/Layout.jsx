@@ -12,7 +12,6 @@ import {
   Menu,
   X,
   LogOut,
-  FolderOpen,
   ShoppingCart,
   UserCircle2,
   HelpCircle,
@@ -23,16 +22,12 @@ import ProfileDropdown from './ProfileDropdown';
 const navItems = [
   { path: '/', icon: LayoutDashboard, label: 'Dashboard', roles: ['company_admin', 'salesman', 'b2b_customer'] },
   { path: '/products', icon: Package, label: 'Products', roles: ['company_admin', 'salesman', 'b2b_customer'] },
-  { path: '/categories', icon: FolderOpen, label: 'Categories', roles: ['company_admin'] },
   { path: '/customers', icon: Users, label: 'Customers', roles: ['company_admin', 'salesman'] },
   { path: '/suppliers', icon: Truck, label: 'Suppliers', roles: ['company_admin'] },
   { path: '/orders', icon: ShoppingCart, label: 'Orders', roles: ['company_admin', 'salesman', 'b2b_customer'] },
-  { path: '/create-order', icon: ShoppingCart, label: 'Create Order', roles: ['company_admin', 'salesman', 'b2b_customer'] },
-  { path: '/create-invoice', icon: Receipt, label: 'Create Bill', roles: ['company_admin'] },
   { path: '/invoices', icon: FileText, label: 'Invoices', roles: ['company_admin', 'salesman', 'b2b_customer'] },
   { path: '/reports', icon: BarChart3, label: 'Reports', roles: ['company_admin', 'salesman'] },
   { path: '/team-members', icon: UserCircle2, label: 'Team', roles: ['company_admin'] },
-  { path: '/salesman-performance', icon: BarChart3, label: 'Salesman Performance', roles: ['company_admin'] },
   { path: '/settings', icon: Settings, label: 'Settings', roles: ['company_admin'] },
   { path: '/help', icon: HelpCircle, label: 'Help', roles: ['company_admin', 'salesman', 'b2b_customer'] },
 ];
@@ -96,7 +91,10 @@ export default function Layout({ children }) {
                 to={path}
                 onClick={() => setSidebarOpen(false)}
                 className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
-                  location.pathname === path
+                  location.pathname === path ||
+                  (path === '/products' && location.pathname.startsWith('/products')) ||
+                  (path === '/invoices' && location.pathname.startsWith('/invoices')) ||
+                  (path === '/team-members' && location.pathname.startsWith('/team-members'))
                     ? 'bg-primary-500 text-white'
                     : 'text-gray-600 hover:bg-gray-100'
                 }`}

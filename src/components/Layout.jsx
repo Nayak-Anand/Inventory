@@ -15,6 +15,7 @@ import {
   FolderOpen,
   ShoppingCart,
   UserCircle2,
+  HelpCircle,
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import ProfileDropdown from './ProfileDropdown';
@@ -33,6 +34,7 @@ const navItems = [
   { path: '/team-members', icon: UserCircle2, label: 'Team', roles: ['company_admin'] },
   { path: '/salesman-performance', icon: BarChart3, label: 'Salesman Performance', roles: ['company_admin'] },
   { path: '/settings', icon: Settings, label: 'Settings', roles: ['company_admin'] },
+  { path: '/help', icon: HelpCircle, label: 'Help', roles: ['company_admin', 'salesman', 'b2b_customer'] },
 ];
 
 export default function Layout({ children }) {

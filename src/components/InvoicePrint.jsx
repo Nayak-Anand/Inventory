@@ -2,15 +2,51 @@ import { forwardRef } from 'react';
 import { useStore } from '../context/StoreContext';
 import { format } from 'date-fns';
 
-const InvoicePrint = forwardRef(({ invoice }, ref) => {
+const InvoicePrint = forwardRef(({ invoice, watermark }, ref) => {
   const { settings } = useStore();
-  const { customer, items: itemsProp, lines, subtotal, cgst, sgst, igst, grandTotal, gstType } = invoice;
+  const { customer, items: itemsProp, lines, subtotal, cgst, sgst, igst, grandTotal, gstType, gstRate } = invoice;
   const rawItems = itemsProp || lines || [];
   const items = rawItems.map((i) => ({ ...i, name: i.name || i.itemName }));
+  const hasGst = (Number(cgst) || 0) + (Number(sgst) || 0) + (Number(igst) || 0) > 0 || (Number(gstRate) || 0) > 0;
+  const isImageWatermark = watermark === 'IMAGE' && settings.watermarkImage;
+  const showTextWatermark = watermark && String(watermark).trim() && watermark !== 'IMAGE';
 
   return (
-    <div ref={ref} className="bg-white p-6 max-w-[210mm] mx-auto text-gray-900" style={{ fontFamily: 'system-ui' }}>
-      <div className="border-b-2 border-gray-800 pb-4 mb-4">
+    <div ref={ref} className="bg-white p-6 max-w-[210mm] mx-auto text-gray-900 relative" style={{ fontFamily: 'system-ui' }}>
+      {isImageWatermark && (
+        <div
+          className="absolute inset-0 flex items-center justify-center pointer-events-none select-none z-0"
+          aria-hidden
+        >
+          <img
+            src={settings.watermarkImage}
+            alt=""
+            className="max-w-[70%] max-h-[70%] w-auto h-auto object-contain"
+            style={{
+              opacity: 0.12,
+              transform: 'rotate(-35deg)',
+            }}
+          />
+        </div>
+      )}
+      {showTextWatermark && (
+        <div
+          className="absolute inset-0 flex items-center justify-center pointer-events-none select-none z-0"
+          aria-hidden
+        >
+          <span
+            className="text-6xl sm:text-7xl font-bold text-gray-400 whitespace-nowrap"
+            style={{
+              opacity: 0.15,
+              transform: 'rotate(-35deg)',
+              userSelect: 'none',
+            }}
+          >
+            {watermark}
+          </span>
+        </div>
+      )}
+      <div className="relative z-10 border-b-2 border-gray-800 pb-4 mb-4">
         <div className="flex justify-between items-start flex-wrap gap-4">
           <div className="flex items-start gap-4">
             {settings.logo && (
@@ -33,7 +69,7 @@ const InvoicePrint = forwardRef(({ invoice }, ref) => {
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-4 mb-6 text-sm">
+      <div className="relative z-10 grid grid-cols-2 gap-4 mb-6 text-sm">
         <div>
           <p className="font-medium text-gray-600">Bill To:</p>
           <p className="font-semibold mt-1">{customer?.name}</p>
@@ -49,7 +85,7 @@ const InvoicePrint = forwardRef(({ invoice }, ref) => {
         </div>
       </div>
 
-      <table className="w-full border-collapse text-sm">
+      <table className="relative z-10 w-full border-collapse text-sm">
         <thead>
           <tr className="bg-gray-100">
             <th className="border border-gray-300 px-3 py-2 text-left">#</th>
@@ -72,12 +108,14 @@ const InvoicePrint = forwardRef(({ invoice }, ref) => {
         </tbody>
       </table>
 
-      <div className="mt-4 flex justify-end">
+      <div className="relative z-10 mt-4 flex justify-end">
         <table className="w-64 text-sm">
-          <tr>
-            <td className="py-1 font-medium">Subtotal:</td>
-            <td className="py-1 text-right">₹{parseFloat(subtotal || 0).toFixed(2)}</td>
-          </tr>
+          {hasGst && (
+            <tr>
+              <td className="py-1 font-medium">Subtotal:</td>
+              <td className="py-1 text-right">₹{parseFloat(subtotal || 0).toFixed(2)}</td>
+            </tr>
+          )}
           {gstType === 'igst' && igst > 0 && (
             <tr>
               <td className="py-1 font-medium">IGST:</td>
@@ -100,7 +138,7 @@ const InvoicePrint = forwardRef(({ invoice }, ref) => {
               )}
             </>
           )}
-          <tr className="border-t-2 border-gray-800">
+          <tr className={hasGst ? 'border-t-2 border-gray-800' : ''}>
             <td className="py-2 font-bold">Grand Total:</td>
             <td className="py-2 text-right font-bold">₹{parseFloat(grandTotal || 0).toFixed(2)}</td>
           </tr>
@@ -108,6 +146,7 @@ const InvoicePrint = forwardRef(({ invoice }, ref) => {
       </div>
 
       {(invoice.paymentStatus || invoice.receivedDate) && (
+        <div className="relative z-10">
         <div className="mt-6 pt-4 border-t space-y-2 text-sm">
           <div className="flex justify-between">
             <span className="text-gray-600">Payment Status:</span>
@@ -138,9 +177,10 @@ const InvoicePrint = forwardRef(({ invoice }, ref) => {
             </div>
           )}
         </div>
+      </div>
       )}
 
-      <p className="mt-8 text-xs text-gray-500 text-center">
+      <p className="relative z-10 mt-8 text-xs text-gray-500 text-center">
         Thank you for your business! This is a computer-generated invoice.
       </p>
     </div>

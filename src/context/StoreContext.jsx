@@ -11,6 +11,7 @@ const defaultSettings = {
   state: 'State',
   stateCode: '01',
   logo: '',
+  watermarkImage: '',
 };
 
 export function StoreProvider({ children }) {
@@ -47,6 +48,8 @@ export function StoreProvider({ children }) {
         minStock: p.reorderLevel || 5,
         unit: 'pcs',
         gstRate: p.gstRate ?? 18,
+        createdAt: p.createdAt,
+        updatedAt: p.updatedAt,
       })));
       setCustomers((customersRes.data || []).map((c) => ({
         id: c.id || c._id,
@@ -57,6 +60,8 @@ export function StoreProvider({ children }) {
         gstin: c.gstin,
         creditLimit: c.creditLimit || 0,
         avatar: c.avatar,
+        createdAt: c.createdAt,
+        updatedAt: c.updatedAt,
       })));
       setInvoices((invoicesRes.data || []).map((inv) => ({
         id: inv.id || inv._id,
@@ -207,9 +212,9 @@ export function StoreProvider({ children }) {
     const { data } = await api.post('/sales/invoices', {
       customerId: invoiceData.customer?.id || invoiceData.customerId,
       date: invoiceData.date,
-      dueDate: invoiceData.dueDate,
+      dueDate: invoiceData.dueDate ?? null,
       gstType: invoiceData.gstType || 'cgst_sgst',
-      gstRate: invoiceData.gstRate || 18,
+      gstRate: invoiceData.gstRate ?? 18,
       items,
     });
     const inv = {
@@ -236,8 +241,10 @@ export function StoreProvider({ children }) {
 
   const updateInvoice = async (id, updates) => {
     if (!token) return;
+    let paidResponse = null;
     if (updates.paymentStatus === 'received') {
-      await api.put(`/sales/invoices/${id}/paid`);
+      const { data } = await api.put(`/sales/invoices/${id}/paid`);
+      paidResponse = data;
     }
     setInvoices((prev) =>
       prev.map((inv) =>
@@ -246,7 +253,7 @@ export function StoreProvider({ children }) {
               ...inv,
               ...updates,
               paymentStatus: updates.paymentStatus || inv.paymentStatus,
-              receivedDate: updates.receivedDate || inv.receivedDate,
+              receivedDate: paidResponse?.paymentReceivedAt ?? updates.receivedDate ?? inv.receivedDate,
               ...(updates.paymentStatus === 'received' && user?.name && { markedByName: user.name }),
             }
           : inv

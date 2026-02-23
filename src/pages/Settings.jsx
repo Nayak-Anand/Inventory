@@ -10,6 +10,7 @@ export default function Settings() {
     state: settings.state || '',
     stateCode: settings.stateCode || '',
     logo: settings.logo || '',
+    watermarkImage: settings.watermarkImage || '',
   });
 
   useEffect(() => {
@@ -20,6 +21,7 @@ export default function Settings() {
       state: settings.state || '',
       stateCode: settings.stateCode || '',
       logo: settings.logo || '',
+      watermarkImage: settings.watermarkImage || '',
     });
   }, [settings]);
 
@@ -40,6 +42,24 @@ export default function Settings() {
   };
 
   const removeLogo = () => setForm((f) => ({ ...f, logo: '' }));
+
+  const handleWatermarkImageChange = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith('image/')) {
+      alert('Please select an image file (PNG, JPG, etc.)');
+      return;
+    }
+    if (file.size > 500 * 1024) {
+      alert('Image should be less than 500 KB');
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = () => setForm((f) => ({ ...f, watermarkImage: reader.result }));
+    reader.readAsDataURL(file);
+  };
+
+  const removeWatermarkImage = () => setForm((f) => ({ ...f, watermarkImage: '' }));
 
   const handleSave = async (e) => {
     e.preventDefault();
@@ -93,6 +113,43 @@ export default function Settings() {
             </label>
           </div>
           <p className="text-xs text-gray-500 mt-1">PNG, JPG (max 500 KB). Will appear on invoices.</p>
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Watermark Image (for invoices)</label>
+          <p className="text-xs text-gray-500 mb-2">Optional. Use as watermark on invoice print (e.g. logo, “PAID”, “COPY”).</p>
+          <div className="flex items-center gap-4">
+            {form.watermarkImage ? (
+              <div className="relative">
+                <img
+                  src={form.watermarkImage}
+                  alt="Watermark"
+                  className="h-20 w-auto max-w-[200px] object-contain border border-gray-200 rounded-lg opacity-80"
+                />
+                <button
+                  type="button"
+                  onClick={removeWatermarkImage}
+                  className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 text-sm hover:bg-red-600"
+                >
+                  ×
+                </button>
+              </div>
+            ) : (
+              <div className="h-20 w-40 border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center text-gray-500 text-sm">
+                No watermark image
+              </div>
+            )}
+            <label className="cursor-pointer">
+              <span className="px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg text-sm font-medium">
+                {form.watermarkImage ? 'Change' : 'Upload'}
+              </span>
+              <input
+                type="file"
+                accept="image/png,image/jpeg,image/jpg,image/webp"
+                className="hidden"
+                onChange={handleWatermarkImageChange}
+              />
+            </label>
+          </div>
         </div>
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">Business Name *</label>

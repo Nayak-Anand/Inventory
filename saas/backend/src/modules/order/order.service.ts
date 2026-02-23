@@ -90,7 +90,7 @@ export class OrderService {
     }));
   }
 
-  async approve(orgId: string, orderId: string, userId: string) {
+  async approve(orgId: string, orderId: string, userId: string, applyGst = true, setDueDate = true, dueDate?: string) {
     const order = await this.orderModel.findOne({ _id: orderId, orgId }).exec();
     if (!order) throw new BadRequestException('Order not found');
     if (order.invoiceId) throw new BadRequestException('Invoice already created for this order');
@@ -101,7 +101,7 @@ export class OrderService {
     order.status = 'approved';
     await order.save();
 
-    const invoice = await this.salesService.createInvoiceFromOrder(orgId, order);
+    const invoice = await this.salesService.createInvoiceFromOrder(orgId, order, applyGst, setDueDate, dueDate);
     order.invoiceId = invoice.id;
     await order.save();
 

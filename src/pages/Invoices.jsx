@@ -7,6 +7,7 @@ import Loading, { LoadingButton } from '../components/Loading';
 import { useReactToPrint } from 'react-to-print';
 import { FileText, Printer, ChevronLeft, CheckCircle, Clock, Download } from 'lucide-react';
 import InvoicePrint from '../components/InvoicePrint';
+import DateTimeCell from '../components/DateTimeCell';
 import { format } from 'date-fns';
 import { exportToCSV, exportToExcel } from '../utils/export';
 
@@ -20,7 +21,34 @@ export default function Invoices() {
   const [markPaidInvoice, setMarkPaidInvoice] = useState(null);
   const [receivedDate, setReceivedDate] = useState(format(new Date(), 'yyyy-MM-dd'));
   const [updatingInvoice, setUpdatingInvoice] = useState(null);
+  const WATERMARK_STORAGE_KEY = 'invoiceWatermark';
+  const [invoiceWatermark, setInvoiceWatermark] = useState(() => {
+    try {
+      return localStorage.getItem(WATERMARK_STORAGE_KEY) || '';
+    } catch {
+      return '';
+    }
+  });
   const printRef = useRef();
+
+  const handleWatermarkChange = (value) => {
+    setInvoiceWatermark(value);
+    try {
+      localStorage.setItem(WATERMARK_STORAGE_KEY, value);
+    } catch {
+      // ignore localStorage errors
+    }
+  };
+
+  const WATERMARK_OPTIONS = [
+    { value: '', label: 'No watermark' },
+    { value: 'ORIGINAL', label: 'ORIGINAL' },
+    { value: 'DUPLICATE', label: 'DUPLICATE' },
+    { value: 'COPY', label: 'COPY' },
+    { value: 'PAID', label: 'PAID' },
+    { value: 'DRAFT', label: 'DRAFT' },
+    { value: 'IMAGE', label: 'Image (custom)' },
+  ];
 
   useEffect(() => {
     const filter = searchParams.get('filter');
@@ -142,7 +170,21 @@ export default function Invoices() {
               </div>
             )}
           </div>
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-3 items-center">
+            <div className="flex items-center gap-2">
+              <label className="text-sm font-medium text-gray-700 whitespace-nowrap">Watermark:</label>
+              <select
+                value={invoiceWatermark}
+                onChange={(e) => handleWatermarkChange(e.target.value)}
+                className="px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white"
+              >
+                {WATERMARK_OPTIONS.map((opt) => (
+                  <option key={opt.value || 'none'} value={opt.value}>
+                    {opt.label}
+                  </option>
+                ))}
+              </select>
+            </div>
             {!isPaid && (
               <LoadingButton
                 onClick={() => handleMarkAsPaid(selectedInvoice)}
@@ -206,7 +248,7 @@ export default function Invoices() {
         )}
 
         <div className="bg-white rounded-xl shadow-sm border p-6 overflow-x-auto">
-          <InvoicePrint ref={printRef} invoice={selectedInvoice} />
+          <InvoicePrint ref={printRef} invoice={selectedInvoice} watermark={invoiceWatermark} />
         </div>
       </div>
     );
@@ -293,20 +335,25 @@ export default function Invoices() {
                       <td className="px-4 py-3 font-medium">{inv.invoiceNumber}</td>
                       <td className="px-4 py-3">{inv.customer?.name || '-'}</td>
                       <td className="px-4 py-3 text-gray-600 hidden sm:table-cell">
-                        {inv.date ? format(new Date(inv.date), 'dd MMM yyyy') : '-'}
+                        <DateTimeCell value={inv.date} />
                       </td>
                       <td className="px-4 py-3 text-gray-600 hidden md:table-cell">
-                        {inv.dueDate ? format(new Date(inv.dueDate), 'dd MMM yyyy') : '-'}
+                        <DateTimeCell value={inv.dueDate} />
                       </td>
                       <td className="px-4 py-3">
-                        <span
-                          className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${
-                            isPaid ? 'bg-green-100 text-green-800' : 'bg-amber-100 text-amber-800'
-                          }`}
-                        >
-                          {isPaid ? <CheckCircle size={14} /> : <Clock size={14} />}
-                          {isPaid ? (inv.markedByName ? `Received by ${inv.markedByName}` : 'Received') : 'Pending'}
-                        </span>
+                        <div className="flex flex-col gap-0.5">
+                          <span
+                            className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium w-fit ${
+                              isPaid ? 'bg-green-100 text-green-800' : 'bg-amber-100 text-amber-800'
+                            }`}
+                          >
+                            {isPaid ? <CheckCircle size={14} /> : <Clock size={14} />}
+                            {isPaid ? (inv.markedByName ? `Received by ${inv.markedByName}` : 'Received') : 'Pending'}
+                          </span>
+                          <div className="text-xs text-gray-500">
+                            {isPaid && inv.receivedDate ? <DateTimeCell value={inv.receivedDate} /> : '—'}
+                          </div>
+                        </div>
                       </td>
                       <td className="px-4 py-3 text-right font-medium">
                         ₹{parseFloat(inv.grandTotal || 0).toLocaleString('en-IN')}

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import api from '../api/client';
 import { useStore } from '../context/StoreContext';
 import { Plus, Pencil, Trash2, FolderOpen } from 'lucide-react';
+import DateTimeCell from '../components/DateTimeCell';
 
 export default function Categories() {
   const { fetchData } = useStore();
@@ -123,13 +124,15 @@ export default function Categories() {
               <tr className="bg-gray-50 border-b">
                 <th className="text-left px-4 py-3 font-medium text-gray-700">Name</th>
                 <th className="text-left px-4 py-3 font-medium text-gray-700 hidden md:table-cell">Description</th>
+                <th className="text-left px-4 py-3 font-medium text-gray-700 hidden lg:table-cell">Created</th>
+                <th className="text-left px-4 py-3 font-medium text-gray-700 hidden lg:table-cell">Last updated</th>
                 <th className="text-right px-4 py-3 font-medium text-gray-700 w-24">Actions</th>
               </tr>
             </thead>
             <tbody>
               {categories.length === 0 ? (
                 <tr>
-                  <td colSpan={3} className="px-4 py-12 text-center text-gray-500">
+                  <td colSpan={5} className="px-4 py-12 text-center text-gray-500">
                     <FolderOpen className="mx-auto mb-2 opacity-50" size={48} />
                     <p>No categories yet. Add your first category above.</p>
                   </td>
@@ -139,6 +142,12 @@ export default function Categories() {
                   <tr key={c.id} className="border-b last:border-0 hover:bg-gray-50">
                     <td className="px-4 py-3 font-medium">{c.name}</td>
                     <td className="px-4 py-3 text-gray-600 hidden md:table-cell">{c.description || '-'}</td>
+                    <td className="px-4 py-3 text-gray-600 hidden lg:table-cell">
+                      <DateTimeCell value={c.createdAt} />
+                    </td>
+                    <td className="px-4 py-3 text-gray-600 hidden lg:table-cell">
+                      <DateTimeCell value={c.updatedAt} />
+                    </td>
                     <td className="px-4 py-3">
                       <div className="flex justify-end gap-2">
                         <button onClick={() => handleEdit(c)} className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg">

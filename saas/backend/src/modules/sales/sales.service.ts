@@ -115,12 +115,14 @@ export class SalesService {
     const igst = data.gstType === 'igst' ? gstAmount : 0;
     const grandTotal = subtotal + gstAmount;
 
+    const dueDateStr = data.dueDate != null && String(data.dueDate).trim() !== '' ? String(data.dueDate).trim() : null;
+    const hasDueDate = !!dueDateStr;
     const invoice = new this.invoiceModel({
       orgId,
       invoiceNumber,
       customerId: data.customerId,
       date: new Date(data.date),
-      dueDate: data.dueDate ? new Date(data.dueDate) : new Date(data.date),
+      ...(hasDueDate && { dueDate: new Date(dueDateStr + 'T12:00:00.000Z') }),
       status: 'sent',
       paymentStatus: 'pending',
       gstType: data.gstType,
@@ -145,6 +147,9 @@ export class SalesService {
   async createInvoiceFromOrder(
     orgId: string,
     order: { _id: any; customerId: string; lines: Array<{ itemId: string; itemName: string; quantity: number; unit?: string; rate: number; amount: number; gstRate?: number }>; subtotal: number; grandTotal: number; taxAmount?: number; date: Date },
+    applyGst = true,
+    setDueDate = true,
+    dueDate?: string,
   ): Promise<{ id: string; _id: any }> {
     const warehouses = await this.warehouseService.findAll(orgId);
     const whId = warehouses[0]?.id;
@@ -155,7 +160,7 @@ export class SalesService {
 
     let totalTax = 0;
     const lines = (order.lines || []).map((l) => {
-      const gstRate = l.gstRate ?? 18;
+      const gstRate = applyGst ? (l.gstRate ?? 18) : 0;
       const lineTax = (l.amount * gstRate) / 100;
       totalTax += lineTax;
       return {
@@ -171,15 +176,22 @@ export class SalesService {
 
     const subtotal = order.subtotal ?? 0;
     const grandTotal = subtotal + totalTax;
-    const cgst = Math.round((totalTax / 2) * 100) / 100;
-    const sgst = Math.round((totalTax / 2) * 100) / 100;
+    const cgst = applyGst ? Math.round((totalTax / 2) * 100) / 100 : 0;
+    const sgst = applyGst ? Math.round((totalTax / 2) * 100) / 100 : 0;
 
+    const invoiceDueDate = setDueDate
+      ? (dueDate && String(dueDate).trim()
+          ? new Date(String(dueDate).trim() + 'T12:00:00.000Z')
+          : order.date
+            ? new Date(order.date)
+            : new Date())
+      : undefined;
     const invoice = new this.invoiceModel({
       orgId,
       invoiceNumber,
       customerId: order.customerId,
       date: order.date ? new Date(order.date) : new Date(),
-      dueDate: order.date ? new Date(order.date) : new Date(),
+      ...(invoiceDueDate && { dueDate: invoiceDueDate }),
       status: 'sent',
       paymentStatus: 'pending',
       gstType: 'cgst_sgst',

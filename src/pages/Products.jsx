@@ -6,6 +6,7 @@ import Loading, { LoadingButton } from '../components/Loading';
 import { Plus, Pencil, Trash2, Package, Download, AlertCircle } from 'lucide-react';
 import { validateRequired, validatePositiveNumber, validateNumber } from '../utils/validation';
 import { exportToCSV, exportToExcel } from '../utils/export';
+import DateTimeCell from '../components/DateTimeCell';
 
 export default function Products() {
   const { user } = useAuth();
@@ -408,6 +409,7 @@ export default function Products() {
                 <th className="text-right px-4 py-3 font-medium text-gray-700">Price</th>
                 <th className="text-right px-4 py-3 font-medium text-gray-700 hidden md:table-cell">GST %</th>
                 <th className="text-right px-4 py-3 font-medium text-gray-700">Stock</th>
+                <th className="text-left px-4 py-3 font-medium text-gray-700 hidden lg:table-cell">Last updated</th>
                 {canEditProducts && (
                   <th className="text-right px-4 py-3 font-medium text-gray-700 w-24">Actions</th>
                 )}
@@ -416,13 +418,13 @@ export default function Products() {
             <tbody>
               {loading && products.length === 0 ? (
                 <tr>
-                  <td colSpan={canEditProducts ? 7 : 6} className="px-4 py-12">
+                  <td colSpan={canEditProducts ? 8 : 7} className="px-4 py-12">
                     <Loading text="Loading products..." size="sm" />
                   </td>
                 </tr>
               ) : products.length === 0 ? (
                 <tr>
-                  <td colSpan={canEditProducts ? 7 : 6} className="px-4 py-12 text-center text-gray-500">
+                  <td colSpan={canEditProducts ? 8 : 7} className="px-4 py-12 text-center text-gray-500">
                     <Package className="mx-auto mb-2 opacity-50" size={48} />
                     <p>No products yet. Add your first product above.</p>
                   </td>
@@ -445,6 +447,9 @@ export default function Products() {
                       >
                         {p.stock || 0} {p.unit || 'pcs'}
                       </span>
+                    </td>
+                    <td className="px-4 py-3 text-gray-600 hidden lg:table-cell">
+                      <DateTimeCell value={p.updatedAt || p.createdAt} />
                     </td>
                     {canEditProducts && (
                       <td className="px-4 py-3">

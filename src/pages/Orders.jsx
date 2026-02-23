@@ -1,16 +1,22 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../api/client';
+import { useStore } from '../context/StoreContext';
 import { useToast } from '../components/Toast';
 import Loading, { LoadingButton } from '../components/Loading';
 import { FileText, CheckCircle, XCircle, Receipt } from 'lucide-react';
-import { format } from 'date-fns';
+import DateTimeCell from '../components/DateTimeCell';
 
 export default function Orders() {
+  const { fetchData } = useStore();
   const toast = useToast();
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [processingId, setProcessingId] = useState(null);
+  const [approveOrder, setApproveOrder] = useState(null);
+  const [applyGstOnApprove, setApplyGstOnApprove] = useState(true);
+  const [setDueDateOnApprove, setSetDueDateOnApprove] = useState(false);
+  const [approveDueDate, setApproveDueDate] = useState('');
 
   const fetchOrders = async () => {
     try {
@@ -28,14 +34,28 @@ export default function Orders() {
     fetchOrders();
   }, []);
 
-  const handleApprove = async (id) => {
-    if (!confirm('Approve this order? Invoice will be created automatically.')) return;
-    
+  const openApproveDialog = (order) => {
+    setApproveOrder(order);
+    setApplyGstOnApprove(true);
+    setSetDueDateOnApprove(false);
+    const orderDate = order.date ? format(new Date(order.date), 'yyyy-MM-dd') : format(new Date(), 'yyyy-MM-dd');
+    setApproveDueDate(orderDate);
+  };
+
+  const handleApproveConfirm = async () => {
+    if (!approveOrder) return;
+    const id = approveOrder.id;
+    setApproveOrder(null);
     setProcessingId(id);
     try {
-      await api.post(`/orders/${id}/approve`);
+      await api.post(`/orders/${id}/approve`, {
+        applyGst: applyGstOnApprove,
+        setDueDate: setDueDateOnApprove,
+        ...(setDueDateOnApprove && approveDueDate && { dueDate: approveDueDate }),
+      });
       toast.success('Order approved and invoice created');
-      fetchOrders();
+      await fetchOrders();
+      await fetchData();
     } catch (err) {
       const errorMsg = err.response?.data?.message || err.message || 'Failed to approve order';
       toast.error(errorMsg);
@@ -75,6 +95,7 @@ export default function Orders() {
                 <th className="text-left px-4 py-3 font-medium text-gray-700">Order #</th>
                 <th className="text-left px-4 py-3 font-medium text-gray-700">Customer</th>
                 <th className="text-left px-4 py-3 font-medium text-gray-700 hidden sm:table-cell">Date</th>
+                <th className="text-left px-4 py-3 font-medium text-gray-700 hidden md:table-cell">Approved at</th>
                 <th className="text-left px-4 py-3 font-medium text-gray-700">Status</th>
                 <th className="text-right px-4 py-3 font-medium text-gray-700 hidden md:table-cell">Amount</th>
                 <th className="text-right px-4 py-3 font-medium text-gray-700">Actions</th>
@@ -83,13 +104,13 @@ export default function Orders() {
             <tbody>
               {loading ? (
                 <tr>
-                  <td colSpan={6} className="px-4 py-12">
+                  <td colSpan={7} className="px-4 py-12">
                     <Loading text="Loading orders..." size="sm" />
                   </td>
                 </tr>
               ) : orders.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="px-4 py-12 text-center text-gray-500">
+                  <td colSpan={7} className="px-4 py-12 text-center text-gray-500">
                     <FileText className="mx-auto mb-2 opacity-50" size={48} />
                     <p>No orders yet.</p>
                   </td>
@@ -102,7 +123,10 @@ export default function Orders() {
                       <td className="px-4 py-3 font-medium">{o.orderNumber}</td>
                       <td className="px-4 py-3">{o.customer?.name || '-'}</td>
                       <td className="px-4 py-3 text-gray-600 hidden sm:table-cell">
-                        {o.date ? format(new Date(o.date), 'dd MMM yyyy') : '-'}
+                        <DateTimeCell value={o.date} />
+                      </td>
+                      <td className="px-4 py-3 text-gray-600 hidden md:table-cell">
+                        <DateTimeCell value={o.approvedAt} />
                       </td>
                       <td className="px-4 py-3">
                         <span
@@ -124,7 +148,7 @@ export default function Orders() {
                         {isPending ? (
                           <div className="flex justify-end gap-2">
                             <LoadingButton
-                              onClick={() => handleApprove(o.id)}
+                              onClick={() => openApproveDialog(o)}
                               loading={processingId === o.id}
                               disabled={processingId === o.id}
                               className="p-2 text-green-600 hover:bg-green-50 rounded-lg disabled:opacity-50"
@@ -169,6 +193,60 @@ export default function Orders() {
           </table>
         </div>
       </div>
+
+      {approveOrder && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-xl shadow-lg p-6 max-w-sm w-full">
+            <h3 className="font-semibold text-lg mb-2">Approve Order</h3>
+            <p className="text-gray-600 mb-4">
+              Invoice will be created for {approveOrder.orderNumber}. Apply GST on this invoice?
+            </p>
+            <label className="flex items-center gap-2 cursor-pointer mb-2">
+              <input
+                type="checkbox"
+                checked={applyGstOnApprove}
+                onChange={(e) => setApplyGstOnApprove(e.target.checked)}
+                className="w-4 h-4 rounded border-gray-300 text-primary-500 focus:ring-primary-500"
+              />
+              <span className="text-sm font-medium text-gray-700">Apply GST on invoice</span>
+            </label>
+            <label className="flex items-center gap-2 cursor-pointer mb-2">
+              <input
+                type="checkbox"
+                checked={setDueDateOnApprove}
+                onChange={(e) => setSetDueDateOnApprove(e.target.checked)}
+                className="w-4 h-4 rounded border-gray-300 text-primary-500 focus:ring-primary-500"
+              />
+              <span className="text-sm font-medium text-gray-700">Set payment due date on invoice</span>
+            </label>
+            {setDueDateOnApprove && (
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700 mb-1">Payment due date</label>
+                <input
+                  type="date"
+                  value={approveDueDate}
+                  onChange={(e) => setApproveDueDate(e.target.value)}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500"
+                />
+              </div>
+            )}
+            <div className="flex gap-2">
+              <button
+                onClick={handleApproveConfirm}
+                className="flex-1 bg-green-500 hover:bg-green-600 text-white py-3 rounded-lg font-medium"
+              >
+                Approve
+              </button>
+              <button
+                onClick={() => setApproveOrder(null)}
+                className="px-4 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 font-medium"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

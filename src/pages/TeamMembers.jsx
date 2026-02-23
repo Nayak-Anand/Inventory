@@ -2,6 +2,7 @@ import { useEffect, useState, useRef } from 'react';
 import api from '../api/client';
 import { useStore } from '../context/StoreContext';
 import { Users, Plus, Pencil, Trash2, UserCircle2, Camera } from 'lucide-react';
+import DateTimeCell from '../components/DateTimeCell';
 
 export default function TeamMembers() {
   const { customers } = useStore();
@@ -371,13 +372,15 @@ export default function TeamMembers() {
                 <th className="text-left px-4 py-3 font-medium text-gray-700">Email</th>
                 <th className="text-left px-4 py-3 font-medium text-gray-700">Role</th>
                 <th className="text-left px-4 py-3 font-medium text-gray-700">Assigned Customers</th>
+                <th className="text-left px-4 py-3 font-medium text-gray-700 hidden lg:table-cell">Created</th>
+                <th className="text-left px-4 py-3 font-medium text-gray-700 hidden lg:table-cell">Last updated</th>
                 <th className="text-right px-4 py-3 font-medium text-gray-700 w-24">Actions</th>
               </tr>
             </thead>
             <tbody>
               {team.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="px-4 py-12 text-center text-gray-500">
+                  <td colSpan={9} className="px-4 py-12 text-center text-gray-500">
                     <Users className="mx-auto mb-2 opacity-50" size={48} />
                     <p>No team members yet. Add your first team member above.</p>
                   </td>
@@ -402,6 +405,12 @@ export default function TeamMembers() {
                       {m.assignedCustomers && m.assignedCustomers.length > 0
                         ? m.assignedCustomers.map((c) => c?.name).filter(Boolean).join(', ')
                         : '—'}
+                    </td>
+                    <td className="px-4 py-3 text-gray-600 hidden lg:table-cell">
+                      <DateTimeCell value={m.createdAt} />
+                    </td>
+                    <td className="px-4 py-3 text-gray-600 hidden lg:table-cell">
+                      <DateTimeCell value={m.updatedAt} />
                     </td>
                     <td className="px-4 py-3">
                       <div className="flex justify-end gap-2">

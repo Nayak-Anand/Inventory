@@ -1,15 +1,17 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useStore } from '../context/StoreContext';
 import { useToast } from '../components/Toast';
 import { LoadingButton } from '../components/Loading';
+import AddCustomerDialog from '../components/AddCustomerDialog';
 import api from '../api/client';
-import { Plus, Trash2 } from 'lucide-react';
+import { Plus, Trash2, UserPlus } from 'lucide-react';
 import { format } from 'date-fns';
 
 export default function CreateOrder() {
   const { products, customers } = useStore();
   const toast = useToast();
   const [customerId, setCustomerId] = useState('');
+  const [showAddCustomer, setShowAddCustomer] = useState(false);
   const [orderDate, setOrderDate] = useState(format(new Date(), 'yyyy-MM-dd'));
   const [items, setItems] = useState([{ productId: '', quantity: 1, rate: 0, name: '', unit: 'pcs' }]);
   const [success, setSuccess] = useState(false);
@@ -69,9 +71,13 @@ export default function CreateOrder() {
           unit: i.unit || 'pcs',
         };
       });
+      // Combine selected date with current time so order date shows correct time
+      const now = new Date();
+      const [y, m, day] = orderDate.split('-').map(Number);
+      const orderDateTime = new Date(y, m - 1, day, now.getHours(), now.getMinutes(), now.getSeconds());
       const { data } = await api.post('/orders', {
         customerId,
-        date: orderDate,
+        date: orderDateTime.toISOString(),
         items: orderItems,
         taxAmount: 0,
       });
@@ -111,7 +117,17 @@ export default function CreateOrder() {
       <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100 space-y-6">
         <div className="grid sm:grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Customer *</label>
+            <div className="flex items-center justify-between mb-1">
+              <label className="block text-sm font-medium text-gray-700">Customer *</label>
+              <button
+                type="button"
+                onClick={() => setShowAddCustomer(true)}
+                className="flex items-center gap-1 text-sm text-primary-500 hover:text-primary-600 font-medium"
+              >
+                <UserPlus size={16} />
+                Add Customer
+              </button>
+            </div>
             <select
               required
               value={customerId}
@@ -222,6 +238,12 @@ export default function CreateOrder() {
           Create Order
         </LoadingButton>
       </div>
+
+      <AddCustomerDialog
+        open={showAddCustomer}
+        onClose={() => setShowAddCustomer(false)}
+        onSuccess={(newId) => { setCustomerId(newId); setShowAddCustomer(false); }}
+      />
     </div>
   );
 }

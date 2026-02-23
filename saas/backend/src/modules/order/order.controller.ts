@@ -28,8 +28,11 @@ export class OrderController {
   @Post(':id/approve')
   @UseGuards(PermissionsGuard)
   @RequirePermissions('*')
-  async approve(@CurrentOrg() orgId: string, @Param('id') id: string, @CurrentUser() user: any) {
-    return this.orderService.approve(orgId, id, user?.id || user?.sub || '');
+  async approve(@CurrentOrg() orgId: string, @Param('id') id: string, @Body() body: { applyGst?: boolean; setDueDate?: boolean; dueDate?: string }, @CurrentUser() user: any) {
+    const applyGst = body?.applyGst !== false;
+    const setDueDate = body?.setDueDate !== false;
+    const dueDate = body?.dueDate;
+    return this.orderService.approve(orgId, id, user?.id || user?.sub || '', applyGst, setDueDate, dueDate);
   }
 
   @Post(':id/reject')

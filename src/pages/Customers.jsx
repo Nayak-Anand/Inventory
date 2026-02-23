@@ -3,6 +3,7 @@ import { useStore } from '../context/StoreContext';
 import { useToast } from '../components/Toast';
 import Loading, { LoadingButton } from '../components/Loading';
 import { Plus, Pencil, Trash2, Users, Download, AlertCircle, UserCircle2, Camera } from 'lucide-react';
+import DateTimeCell from '../components/DateTimeCell';
 import { validateRequired, validateEmail, validatePhone, validateGSTIN } from '../utils/validation';
 import { exportToCSV, exportToExcel } from '../utils/export';
 
@@ -378,19 +379,21 @@ export default function Customers() {
                 <th className="text-left px-4 py-3 font-medium text-gray-700">Name</th>
                 <th className="text-left px-4 py-3 font-medium text-gray-700">Phone</th>
                 <th className="text-left px-4 py-3 font-medium text-gray-700 hidden md:table-cell">Address</th>
+                <th className="text-left px-4 py-3 font-medium text-gray-700 hidden lg:table-cell">Created</th>
+                <th className="text-left px-4 py-3 font-medium text-gray-700 hidden lg:table-cell">Last updated</th>
                 <th className="text-right px-4 py-3 font-medium text-gray-700 w-24">Actions</th>
               </tr>
             </thead>
             <tbody>
-              {loading && customers.length === 0 ? (
+              {              loading && customers.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="px-4 py-12">
+                  <td colSpan={7} className="px-4 py-12">
                     <Loading text="Loading customers..." size="sm" />
                   </td>
                 </tr>
               ) : customers.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="px-4 py-12 text-center text-gray-500">
+                  <td colSpan={7} className="px-4 py-12 text-center text-gray-500">
                     <Users className="mx-auto mb-2 opacity-50" size={48} />
                     <p>No customers yet. Add your first customer above.</p>
                   </td>
@@ -411,6 +414,12 @@ export default function Customers() {
                     <td className="px-4 py-3">{c.phone || '-'}</td>
                     <td className="px-4 py-3 text-gray-600 hidden md:table-cell truncate max-w-[200px]">
                       {c.address || '-'}
+                    </td>
+                    <td className="px-4 py-3 text-gray-600 hidden lg:table-cell">
+                      <DateTimeCell value={c.createdAt} />
+                    </td>
+                    <td className="px-4 py-3 text-gray-600 hidden lg:table-cell">
+                      <DateTimeCell value={c.updatedAt} />
                     </td>
                     <td className="px-4 py-3">
                       <div className="flex justify-end gap-2">

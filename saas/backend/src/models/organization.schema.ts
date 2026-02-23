@@ -33,6 +33,9 @@ export class Organization {
   logo?: string;
 
   @Prop()
+  watermarkImage?: string;
+
+  @Prop()
   subscriptionPlanId?: string;
 
   @Prop({ default: 0 })

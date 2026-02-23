@@ -20,6 +20,7 @@ import TeamMembers from './pages/TeamMembers';
 import SalesmanPerformance from './pages/SalesmanPerformance';
 import Reports from './pages/Reports';
 import Settings from './pages/Settings';
+import Help from './pages/Help';
 
 const pathRoles = {
   '/': ['company_admin', 'salesman', 'b2b_customer'],
@@ -35,6 +36,7 @@ const pathRoles = {
   '/team-members': ['company_admin'],
   '/salesman-performance': ['company_admin'],
   '/settings': ['company_admin'],
+  '/help': ['company_admin', 'salesman', 'b2b_customer'],
 };
 
 function PrivateRoute({ children }) {
@@ -92,6 +94,7 @@ function App() {
                           <Route path="/salesman-performance" element={<SalesmanPerformance />} />
                           <Route path="/reports" element={<Reports />} />
                           <Route path="/settings" element={<Settings />} />
+                          <Route path="/help" element={<Help />} />
                           <Route path="*" element={<Navigate to="/" replace />} />
                         </Routes>
                       </Layout>

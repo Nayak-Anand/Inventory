@@ -60,6 +60,8 @@ export class TeamService {
       roleId: u.roleId,
       role: roleMap[u.roleId],
       assignedCustomerIds: u.assignedCustomerIds || [],
+      createdAt: u.createdAt,
+      updatedAt: u.updatedAt,
       assignedCustomers: (u.assignedCustomerIds || []).map((cid: string) => customerMap[cid]).filter(Boolean),
       isActive: u.isActive,
     }));

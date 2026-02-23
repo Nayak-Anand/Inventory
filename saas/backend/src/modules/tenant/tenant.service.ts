@@ -37,10 +37,11 @@ export class TenantService {
       state: org.state || '',
       stateCode: org.stateCode || '',
       logo: org.logo || '',
+      watermarkImage: org.watermarkImage || '',
     };
   }
 
-  async updateSettings(orgId: string, data: { businessName?: string; address?: string; gstin?: string; state?: string; stateCode?: string; logo?: string }) {
+  async updateSettings(orgId: string, data: { businessName?: string; address?: string; gstin?: string; state?: string; stateCode?: string; logo?: string; watermarkImage?: string }) {
     const org = await this.orgModel.findById(orgId).exec();
     if (!org) return null;
     if (data.businessName !== undefined) org.businessName = data.businessName;
@@ -49,6 +50,7 @@ export class TenantService {
     if (data.state !== undefined) org.state = data.state;
     if (data.stateCode !== undefined) org.stateCode = data.stateCode;
     if (data.logo !== undefined) org.logo = data.logo;
+    if (data.watermarkImage !== undefined) org.watermarkImage = data.watermarkImage;
     await org.save();
     return this.getSettings(orgId);
   }

@@ -2,23 +2,53 @@ import { useState, useRef } from 'react';
 import { useStore } from '../context/StoreContext';
 import { useToast } from '../components/Toast';
 import { LoadingButton } from '../components/Loading';
+import AddCustomerDialog from '../components/AddCustomerDialog';
 import { useReactToPrint } from 'react-to-print';
-import { Plus, Trash2 } from 'lucide-react';
+import { Plus, Trash2, UserPlus } from 'lucide-react';
 import InvoicePrint from '../components/InvoicePrint';
-import { format, addDays } from 'date-fns';
+import { format } from 'date-fns';
 
 const GST_RATES = [0, 5, 12, 18, 28];
+
+const WATERMARK_OPTIONS = [
+  { value: '', label: 'No watermark' },
+  { value: 'ORIGINAL', label: 'ORIGINAL' },
+  { value: 'DUPLICATE', label: 'DUPLICATE' },
+  { value: 'COPY', label: 'COPY' },
+  { value: 'PAID', label: 'PAID' },
+  { value: 'DRAFT', label: 'DRAFT' },
+  { value: 'IMAGE', label: 'Image (custom)' },
+];
 
 export default function CreateInvoice() {
   const { products, customers, createInvoice } = useStore();
   const toast = useToast();
   const printRef = useRef();
+  const WATERMARK_STORAGE_KEY = 'invoiceWatermark';
   const [createdInvoice, setCreatedInvoice] = useState(null);
   const [submitting, setSubmitting] = useState(false);
+  const [printWatermark, setPrintWatermark] = useState(() => {
+    try {
+      return localStorage.getItem(WATERMARK_STORAGE_KEY) || '';
+    } catch {
+      return '';
+    }
+  });
+
+  const handlePrintWatermarkChange = (value) => {
+    setPrintWatermark(value);
+    try {
+      localStorage.setItem(WATERMARK_STORAGE_KEY, value);
+    } catch {
+      // ignore localStorage errors
+    }
+  };
 
   const [customerId, setCustomerId] = useState('');
+  const [showAddCustomer, setShowAddCustomer] = useState(false);
   const [invoiceDate, setInvoiceDate] = useState(format(new Date(), 'yyyy-MM-dd'));
-  const [dueDate, setDueDate] = useState(format(addDays(new Date(), 7), 'yyyy-MM-dd'));
+  const [dueDate, setDueDate] = useState('');
+  const [applyGst, setApplyGst] = useState(true);
   const [gstRate, setGstRate] = useState(18);
   const [gstType, setGstType] = useState('cgst_sgst');
   const [items, setItems] = useState([{ productId: '', quantity: 1, rate: 0, name: '', unit: 'pcs' }]);
@@ -57,10 +87,11 @@ export default function CreateInvoice() {
     0
   );
 
-  const gstAmount = (subtotal * gstRate) / 100;
-  const cgst = gstType === 'cgst_sgst' ? gstAmount / 2 : 0;
-  const sgst = gstType === 'cgst_sgst' ? gstAmount / 2 : 0;
-  const igst = gstType === 'igst' ? gstAmount : 0;
+  const effectiveGstRate = applyGst ? gstRate : 0;
+  const gstAmount = (subtotal * effectiveGstRate) / 100;
+  const cgst = applyGst && gstType === 'cgst_sgst' ? gstAmount / 2 : 0;
+  const sgst = applyGst && gstType === 'cgst_sgst' ? gstAmount / 2 : 0;
+  const igst = applyGst && gstType === 'igst' ? gstAmount : 0;
   const grandTotal = subtotal + gstAmount;
 
   const handlePrint = useReactToPrint({
@@ -99,15 +130,15 @@ export default function CreateInvoice() {
         customer: { ...customer, id: customerId },
         customerId,
         date: invoiceDate,
-        dueDate,
+        dueDate: dueDate.trim() || null,
         items: invoiceItems,
         subtotal,
         cgst,
         sgst,
         igst,
         grandTotal,
-        gstType: gstType === 'cgst_sgst' ? 'cgst_sgst' : 'igst',
-        gstRate,
+        gstType: applyGst ? (gstType === 'cgst_sgst' ? 'cgst_sgst' : 'igst') : 'cgst_sgst',
+        gstRate: effectiveGstRate,
       });
       setCreatedInvoice(invoice);
       toast.success('Invoice created successfully');
@@ -122,8 +153,14 @@ export default function CreateInvoice() {
   const resetForm = () => {
     setCreatedInvoice(null);
     setCustomerId('');
+    try {
+      setPrintWatermark(localStorage.getItem(WATERMARK_STORAGE_KEY) || '');
+    } catch {
+      setPrintWatermark('');
+    }
     setInvoiceDate(format(new Date(), 'yyyy-MM-dd'));
-    setDueDate(format(addDays(new Date(), 7), 'yyyy-MM-dd'));
+    setDueDate('');
+    setApplyGst(true);
     setGstRate(18);
     setGstType('cgst_sgst');
     setItems([{ productId: '', quantity: 1, rate: 0, name: '', unit: 'pcs' }]);
@@ -137,7 +174,21 @@ export default function CreateInvoice() {
           <p className="text-sm text-green-700 mt-1">Stock has been updated automatically.</p>
         </div>
 
-        <div className="flex flex-wrap gap-3">
+        <div className="flex flex-wrap gap-3 items-center">
+          <div className="flex items-center gap-2">
+            <label className="text-sm font-medium text-gray-700">Watermark:</label>
+            <select
+              value={printWatermark}
+              onChange={(e) => handlePrintWatermarkChange(e.target.value)}
+              className="px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white"
+            >
+              {WATERMARK_OPTIONS.map((opt) => (
+                <option key={opt.value || 'none'} value={opt.value}>
+                  {opt.label}
+                </option>
+              ))}
+            </select>
+          </div>
           <button
             onClick={handlePrint}
             className="bg-primary-500 hover:bg-primary-600 text-white px-6 py-3 rounded-xl font-medium"
@@ -153,7 +204,7 @@ export default function CreateInvoice() {
         </div>
 
         <div className="bg-white rounded-xl shadow-sm border p-6">
-          <InvoicePrint ref={printRef} invoice={createdInvoice} />
+          <InvoicePrint ref={printRef} invoice={createdInvoice} watermark={printWatermark} />
         </div>
       </div>
     );
@@ -166,7 +217,17 @@ export default function CreateInvoice() {
       <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100 space-y-6">
         <div className="grid sm:grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Customer *</label>
+            <div className="flex items-center justify-between mb-1">
+              <label className="block text-sm font-medium text-gray-700">Customer *</label>
+              <button
+                type="button"
+                onClick={() => setShowAddCustomer(true)}
+                className="flex items-center gap-1 text-sm text-primary-500 hover:text-primary-600 font-medium"
+              >
+                <UserPlus size={16} />
+                Add Customer
+              </button>
+            </div>
             <select
               required
               value={customerId}
@@ -188,49 +249,70 @@ export default function CreateInvoice() {
               value={invoiceDate}
               onChange={(e) => {
               setInvoiceDate(e.target.value);
-              const newDue = addDays(new Date(e.target.value), 7);
-              setDueDate(format(newDue, 'yyyy-MM-dd'));
             }}
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Payment Due Date</label>
-            <input
-              type="date"
-              value={dueDate}
-              onChange={(e) => setDueDate(e.target.value)}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500"
-            />
+            <label className="block text-sm font-medium text-gray-700 mb-1">Payment Due Date (Optional)</label>
+            <div className="flex gap-2">
+              <input
+                type="date"
+                value={dueDate}
+                onChange={(e) => setDueDate(e.target.value)}
+                className="flex-1 min-w-0 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500"
+              />
+              <button
+                type="button"
+                onClick={() => setDueDate('')}
+                className="px-4 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 text-sm font-medium text-gray-700 whitespace-nowrap"
+                title="No due date"
+              >
+                No due date
+              </button>
+            </div>
           </div>
         </div>
 
-        <div className="grid sm:grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">GST Type</label>
-            <select
-              value={gstType}
-              onChange={(e) => setGstType(e.target.value)}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg"
-            >
-              <option value="cgst_sgst">CGST + SGST (Same State)</option>
-              <option value="igst">IGST (Different State)</option>
-            </select>
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">GST Rate %</label>
-            <select
-              value={gstRate}
-              onChange={(e) => setGstRate(Number(e.target.value))}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg"
-            >
-              {GST_RATES.map((r) => (
-                <option key={r} value={r}>
-                  {r}%
-                </option>
-              ))}
-            </select>
-          </div>
+        <div className="space-y-4">
+          <label className="flex items-center gap-2 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={applyGst}
+              onChange={(e) => setApplyGst(e.target.checked)}
+              className="w-4 h-4 rounded border-gray-300 text-primary-500 focus:ring-primary-500"
+            />
+            <span className="text-sm font-medium text-gray-700">Apply GST on this invoice</span>
+          </label>
+          {applyGst && (
+            <div className="grid sm:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">GST Type</label>
+                <select
+                  value={gstType}
+                  onChange={(e) => setGstType(e.target.value)}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg"
+                >
+                  <option value="cgst_sgst">CGST + SGST (Same State)</option>
+                  <option value="igst">IGST (Different State)</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">GST Rate %</label>
+                <select
+                  value={gstRate}
+                  onChange={(e) => setGstRate(Number(e.target.value))}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg"
+                >
+                  {GST_RATES.map((r) => (
+                    <option key={r} value={r}>
+                      {r}%
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+          )}
         </div>
 
         <div>
@@ -312,7 +394,7 @@ export default function CreateInvoice() {
               <span>Subtotal:</span>
               <span>₹{subtotal.toFixed(2)}</span>
             </div>
-            {gstType === 'cgst_sgst' && gstRate > 0 && (
+            {applyGst && gstType === 'cgst_sgst' && effectiveGstRate > 0 && (
               <>
                 <div className="flex justify-between">
                   <span>CGST ({gstRate / 2}%):</span>
@@ -324,7 +406,7 @@ export default function CreateInvoice() {
                 </div>
               </>
             )}
-            {gstType === 'igst' && gstRate > 0 && (
+            {applyGst && gstType === 'igst' && effectiveGstRate > 0 && (
               <div className="flex justify-between">
                 <span>IGST ({gstRate}%):</span>
                 <span>₹{gstAmount.toFixed(2)}</span>
@@ -346,6 +428,12 @@ export default function CreateInvoice() {
           Create Invoice
         </LoadingButton>
       </div>
+
+      <AddCustomerDialog
+        open={showAddCustomer}
+        onClose={() => setShowAddCustomer(false)}
+        onSuccess={(newId) => { setCustomerId(newId); setShowAddCustomer(false); }}
+      />
     </div>
   );
 }

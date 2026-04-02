@@ -29,11 +29,58 @@ const navItems = [
   { path: '/help', icon: HelpCircle, label: 'Help', roles: ['company_admin', 'salesman', 'b2b_customer'] },
 ];
 
+const pageMeta = [
+  { match: (pathname) => pathname === '/', title: 'Dashboard' },
+  {
+    match: (pathname) => pathname === '/products/categories',
+    title: 'Categories',
+    subtitle: 'Manage product categories from this page.',
+  },
+  { match: (pathname) => pathname.startsWith('/products'), title: 'Products' },
+  { match: (pathname) => pathname.startsWith('/customers'), title: 'Customers' },
+  { match: (pathname) => pathname.startsWith('/suppliers'), title: 'Suppliers' },
+  {
+    match: (pathname) => pathname.startsWith('/orders'),
+    title: 'Orders',
+    subtitle: 'Approve orders to auto-create invoices.',
+  },
+  {
+    match: (pathname) => pathname === '/invoices/create',
+    title: 'Create Invoice',
+    subtitle: 'Create a new invoice and print or save it.',
+  },
+  { match: (pathname) => pathname.startsWith('/invoices'), title: 'Invoices' },
+  { match: (pathname) => pathname.startsWith('/reports'), title: 'Reports' },
+  {
+    match: (pathname) => pathname === '/team-members/performance',
+    title: 'Salesman Performance',
+    subtitle: 'Review sales performance by team member.',
+  },
+  { match: (pathname) => pathname.startsWith('/team-members'), title: 'Team Members' },
+  {
+    match: (pathname) => pathname.startsWith('/settings'),
+    title: 'Business Settings',
+    subtitle: 'This information will appear on your invoices.',
+  },
+  {
+    match: (pathname) => pathname.startsWith('/help'),
+    title: 'Help',
+    subtitle: 'How to use each page. If you face any issues, check this page.',
+  },
+];
+
+function getPageMeta(pathname) {
+  return pageMeta.find((entry) => entry.match(pathname)) || {};
+}
+
 export default function Layout({ children }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
   const { user, logout } = useAuth();
+  const currentPage = getPageMeta(location.pathname);
+  const currentNavLabel = navItems.find((n) => n.path === location.pathname)?.label;
+  const pageTitle = currentPage.title || currentNavLabel || 'B2B Inventory';
 
   return (
     <div className="min-h-screen bg-gray-50 flex">
@@ -101,9 +148,12 @@ export default function Layout({ children }) {
             >
               <Menu size={24} />
             </button>
-            <h2 className="font-semibold text-gray-800 truncate">
-              {navItems.find((n) => n.path === location.pathname)?.label || 'B2B Inventory'}
-            </h2>
+            <div className="min-w-0">
+              <h2 className="font-semibold text-gray-800 truncate">{pageTitle}</h2>
+              {currentPage.subtitle && (
+                <p className="text-xs text-gray-500 truncate">{currentPage.subtitle}</p>
+              )}
+            </div>
           </div>
           {user && (
             <div className="flex shrink-0">

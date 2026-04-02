@@ -66,8 +66,6 @@ export default function SalesmanPerformance() {
   return (
     <div className="space-y-6">
       <div className="flex flex-col gap-4">
-        <h1 className="text-2xl font-bold">Salesman Performance</h1>
-
         <div className="flex flex-wrap items-center gap-3 p-4 bg-white rounded-xl border border-gray-100">
           <Calendar className="text-gray-500" size={20} />
           <span className="text-sm font-medium text-gray-700">Date range (day-wise):</span>

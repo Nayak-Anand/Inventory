@@ -1,4 +1,4 @@
-import { HelpCircle, ChevronDown, ChevronUp, Globe } from 'lucide-react';
+import { ChevronDown, ChevronUp, Globe } from 'lucide-react';
 import { useState } from 'react';
 
 function HelpSection({ title, children, defaultOpen = false }) {
@@ -457,13 +457,6 @@ export default function Help() {
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <HelpCircle className="text-primary-500 shrink-0" size={32} />
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900">{t.title}</h1>
-            <p className="text-gray-600 text-sm">{t.subtitle}</p>
-          </div>
-        </div>
         <div className="flex items-center gap-2">
           <Globe size={18} className="text-gray-500 shrink-0" />
           <select

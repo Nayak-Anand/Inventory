@@ -219,8 +219,6 @@ export default function CreateInvoice() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold">Create Invoice</h1>
-
       <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100 space-y-6">
         <div className="grid sm:grid-cols-2 gap-4">
           <div>

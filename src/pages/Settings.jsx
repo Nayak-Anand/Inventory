@@ -73,9 +73,6 @@ export default function Settings() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold">Business Settings</h1>
-      <p className="text-gray-600">This information will appear on your invoices.</p>
-
       <form onSubmit={handleSave} className="bg-white rounded-xl shadow-sm p-6 border border-gray-100 space-y-4 max-w-xl">
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">Business Logo</label>

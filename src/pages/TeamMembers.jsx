@@ -178,7 +178,6 @@ export default function TeamMembers() {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div className="flex items-center gap-4">
-          <h1 className="text-2xl font-bold">Team Members</h1>
           <div className="flex rounded-lg border border-gray-200 p-0.5 bg-gray-50">
             <button
               onClick={() => setActiveTab('team')}
@@ -479,4 +478,3 @@ export default function TeamMembers() {
     </div>
   );
 }
-

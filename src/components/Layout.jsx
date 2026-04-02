@@ -8,10 +8,8 @@ import {
   FileText,
   Receipt,
   BarChart3,
-  Settings,
   Menu,
   X,
-  LogOut,
   ShoppingCart,
   UserCircle2,
   HelpCircle,
@@ -28,7 +26,6 @@ const navItems = [
   { path: '/invoices', icon: FileText, label: 'Invoices', roles: ['company_admin', 'salesman', 'b2b_customer'] },
   { path: '/reports', icon: BarChart3, label: 'Reports', roles: ['company_admin', 'salesman'] },
   { path: '/team-members', icon: UserCircle2, label: 'Team', roles: ['company_admin'] },
-  { path: '/settings', icon: Settings, label: 'Settings', roles: ['company_admin'] },
   { path: '/help', icon: HelpCircle, label: 'Help', roles: ['company_admin', 'salesman', 'b2b_customer'] },
 ];
 
@@ -68,19 +65,6 @@ export default function Layout({ children }) {
                 <X size={24} />
               </button>
             </div>
-            {user && (
-              <div className="mt-3 flex items-center gap-2 px-2 py-2 rounded-lg bg-gray-50">
-                {user.avatar ? (
-                  <img src={user.avatar} alt="" className="w-10 h-10 rounded-full object-cover shrink-0" />
-                ) : (
-                  <UserCircle2 size={40} className="text-primary-500 shrink-0" />
-                )}
-                <div className="min-w-0">
-                  <p className="text-sm font-medium text-gray-800 truncate">{user.name}</p>
-                  <p className="text-xs text-gray-500 truncate">{user.email}</p>
-                </div>
-              </div>
-            )}
           </div>
           <nav className="flex-1 p-3 space-y-1 overflow-y-auto">
             {navItems
@@ -103,13 +87,6 @@ export default function Layout({ children }) {
                 <span className="font-medium">{label}</span>
               </Link>
             ))}
-            <button
-              onClick={() => { logout(); navigate('/login'); }}
-              className="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-600 hover:bg-gray-100 w-full mt-4"
-            >
-              <LogOut size={22} />
-              <span className="font-medium">Logout</span>
-            </button>
           </nav>
         </div>
       </aside>

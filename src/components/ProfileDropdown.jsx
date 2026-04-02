@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { UserCircle2, Camera, X, LogOut } from 'lucide-react';
+import { UserCircle2, Camera, X, LogOut, Sun, Moon, Building2, ChevronDown } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import api from '../api/client';
 
@@ -9,9 +9,9 @@ export default function ProfileDropdown() {
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [theme, setTheme] = useState(() => localStorage.getItem('uiTheme') || 'light');
   const fileInputRef = useRef(null);
   const dropdownRef = useRef(null);
-  const leaveTimerRef = useRef(null);
 
   useEffect(() => {
     const handleClickOutside = (e) => {
@@ -23,13 +23,13 @@ export default function ProfileDropdown() {
     return () => document.removeEventListener('click', handleClickOutside);
   }, []);
 
-  const handleMouseEnter = () => {
-    if (leaveTimerRef.current) clearTimeout(leaveTimerRef.current);
-    setOpen(true);
-  };
+  useEffect(() => {
+    document.documentElement.dataset.theme = theme;
+    localStorage.setItem('uiTheme', theme);
+  }, [theme]);
 
-  const handleMouseLeave = () => {
-    leaveTimerRef.current = setTimeout(() => setOpen(false), 150);
+  const setUiTheme = (nextTheme) => {
+    setTheme(nextTheme);
   };
 
   const handleFileSelect = async (e) => {
@@ -58,81 +58,110 @@ export default function ProfileDropdown() {
     <div
       className="relative"
       ref={dropdownRef}
-      onMouseEnter={handleMouseEnter}
-      onMouseLeave={handleMouseLeave}
     >
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="image/*"
+        className="hidden"
+        onChange={handleFileSelect}
+        disabled={uploading}
+      />
       <button
         type="button"
-        onClick={() => setOpen(!open)}
-        className="flex items-center justify-center w-10 h-10 rounded-full bg-primary-500 hover:bg-primary-600 text-white shrink-0 ring-2 ring-primary-200 focus:outline-none focus:ring-2 focus:ring-primary-500 transition-shadow"
+        onClick={() => setOpen((prev) => !prev)}
+        className="flex items-center gap-3 rounded-full bg-white/90 hover:bg-white text-gray-800 shrink-0 shadow-sm focus:outline-none transition-shadow px-2 py-1"
         aria-label="Profile"
       >
-        {user.avatar ? (
-          <img src={user.avatar} alt="" className="w-full h-full rounded-full object-cover" />
-        ) : (
-          <UserCircle2 size={24} />
-        )}
+        <span className="flex items-center justify-center w-10 h-10 rounded-full bg-primary-500 text-white overflow-hidden shrink-0">
+          {user.avatar ? (
+            <img src={user.avatar} alt="" className="w-full h-full rounded-full object-cover" />
+          ) : (
+            <UserCircle2 size={24} />
+          )}
+        </span>
+        <span className="hidden md:flex flex-col items-start leading-tight min-w-0 pr-1">
+          <span className="text-sm font-semibold truncate max-w-40">{user.name || 'Profile'}</span>
+          <span className="text-xs text-gray-500 truncate max-w-40">{user.email || user.mobile}</span>
+        </span>
+        <ChevronDown className="hidden md:block w-4 h-4 text-gray-400 shrink-0" />
       </button>
 
       {open && (
-        <div className="absolute right-0 top-full mt-2 z-50 w-72 bg-white rounded-xl shadow-lg border border-gray-100 py-4">
-            <div className="px-4 flex justify-end">
+        <div className="absolute right-0 top-full mt-3 z-50 w-80 overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-xl">
+          <div className="px-5 pt-5 pb-4">
+            <div className="flex items-start justify-between gap-4">
+              <div className="min-w-0">
+                <p className="font-semibold text-gray-900 truncate">{user.name}</p>
+                <p className="text-sm text-gray-500 truncate">{user.email || user.mobile}</p>
+              </div>
               <button
                 type="button"
                 onClick={() => setOpen(false)}
-                className="p-1 rounded hover:bg-gray-100 text-gray-400"
+                className="p-1 rounded-full hover:bg-gray-100 text-gray-400 shrink-0"
                 aria-label="Close"
               >
-                <X size={18} />
+                <X size={16} />
               </button>
             </div>
-            <div className="px-6 pb-4 -mt-6 flex flex-col items-center">
-              <div className="relative group">
-                <div className="w-20 h-20 rounded-full bg-primary-100 flex items-center justify-center overflow-hidden border-2 border-primary-200">
-                  {user.avatar ? (
-                    <img src={user.avatar} alt="" className="w-full h-full object-cover" />
-                  ) : (
-                    <UserCircle2 size={40} className="text-primary-500" />
-                  )}
-                </div>
-                <button
-                  type="button"
-                  onClick={() => fileInputRef.current?.click()}
-                  disabled={uploading}
-                  className="absolute bottom-0 right-0 w-8 h-8 rounded-full bg-primary-500 text-white flex items-center justify-center hover:bg-primary-600 transition-colors shadow disabled:opacity-70"
-                  title="Change photo"
-                >
-                  <Camera size={16} />
-                </button>
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept="image/*"
-                  className="hidden"
-                  onChange={handleFileSelect}
-                  disabled={uploading}
-                />
-              </div>
-              <p className="mt-3 font-semibold text-gray-900 text-center">{user.name}</p>
-              <p className="text-sm text-gray-500 text-center truncate w-full px-2">{user.mobile}</p>
-              {user.email && <p className="text-xs text-gray-400 text-center truncate w-full px-2">{user.email}</p>}
+          </div>
+
+          <div className="border-t border-gray-100 px-5 py-4">
+            <p className="text-xs font-semibold uppercase tracking-wider text-gray-500 mb-3">Theme</p>
+            <div className="grid grid-cols-2 gap-2 rounded-2xl bg-gray-100 p-1">
               <button
                 type="button"
-                onClick={() => fileInputRef.current?.click()}
-                disabled={uploading}
-                className="mt-4 text-sm text-primary-600 hover:text-primary-700 font-medium"
+                onClick={() => setUiTheme('light')}
+                className={`flex items-center justify-center gap-2 rounded-xl px-3 py-2 text-sm font-medium transition-colors ${
+                  theme === 'light' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-600 hover:text-gray-900'
+                }`}
               >
-                {uploading ? 'Uploading...' : 'Change photo'}
+                <Sun size={16} />
+                Light
               </button>
               <button
                 type="button"
-                onClick={() => { logout(); navigate('/login'); }}
-                className="mt-2 flex items-center justify-center gap-2 w-full px-4 py-2 text-sm text-gray-600 hover:bg-gray-50 rounded-lg"
+                onClick={() => setUiTheme('dark')}
+                className={`flex items-center justify-center gap-2 rounded-xl px-3 py-2 text-sm font-medium transition-colors ${
+                  theme === 'dark' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-600 hover:text-gray-900'
+                }`}
               >
-                <LogOut size={16} />
-                Logout
+                <Moon size={16} />
+                Dark
               </button>
             </div>
+          </div>
+
+          <div className="border-t border-gray-100 py-2">
+            <button
+              type="button"
+              onClick={() => { setOpen(false); navigate('/settings'); }}
+              className="w-full flex items-center gap-3 px-5 py-3 text-left text-gray-700 hover:bg-gray-50 transition-colors"
+            >
+              <Building2 size={18} className="text-gray-400" />
+              <span>Business Settings</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              disabled={uploading}
+              className="w-full flex items-center gap-3 px-5 py-3 text-left text-gray-700 hover:bg-gray-50 transition-colors disabled:opacity-60"
+            >
+              <Camera size={18} className="text-gray-400" />
+              <span>{uploading ? 'Uploading...' : 'Change Profile Image'}</span>
+            </button>
+          </div>
+
+          <div className="border-t border-gray-100 p-2">
+            <button
+              type="button"
+              onClick={() => { logout(); navigate('/login'); }}
+              className="w-full flex items-center gap-3 rounded-xl px-4 py-3 text-left text-gray-700 hover:bg-gray-50 transition-colors"
+            >
+              <LogOut size={18} className="text-gray-400" />
+              <span>Sign out</span>
+            </button>
+          </div>
         </div>
       )}
     </div>

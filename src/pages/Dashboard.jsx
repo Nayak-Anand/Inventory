@@ -1,7 +1,7 @@
 import { useStore } from '../context/StoreContext';
 import { useAuth } from '../context/AuthContext';
 import Loading from '../components/Loading';
-import { Package, Users, Truck, FileText, TrendingUp, Clock } from 'lucide-react';
+import { Package, Users, Truck, FileText, TrendingUp, Clock, Plus } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 export default function Dashboard() {
@@ -28,6 +28,28 @@ export default function Dashboard() {
 
   return (
     <div className="space-y-6">
+      <div className="flex justify-end">
+        {user?.roleType === 'company_admin' ? (
+          <Link
+            to="/invoices/create"
+            className="inline-flex items-center justify-center gap-2 bg-primary-500 hover:bg-primary-600 text-white px-4 py-3 rounded-xl font-medium"
+          >
+            <Plus size={20} />
+            <span className="hidden sm:inline">Create New Invoice</span>
+            <span className="sm:hidden">Create</span>
+          </Link>
+        ) : (
+          <Link
+            to="/orders?create=1"
+            className="inline-flex items-center justify-center gap-2 bg-primary-500 hover:bg-primary-600 text-white px-4 py-3 rounded-xl font-medium"
+          >
+            <Plus size={20} />
+            <span className="hidden sm:inline">Create New Order</span>
+            <span className="sm:hidden">Create</span>
+          </Link>
+        )}
+      </div>
+
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {cards.map(({ icon: Icon, label, value, color, link }) => (
           <Link
@@ -93,21 +115,6 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {user?.roleType === 'company_admin' ? (
-        <Link
-          to="/invoices/create"
-          className="block w-full py-4 bg-primary-500 hover:bg-primary-600 text-white font-semibold rounded-xl text-center transition-colors"
-        >
-          + Create New Invoice
-        </Link>
-      ) : (
-        <Link
-          to="/orders?create=1"
-          className="block w-full py-4 bg-primary-500 hover:bg-primary-600 text-white font-semibold rounded-xl text-center transition-colors"
-        >
-          + Create New Order
-        </Link>
-      )}
     </div>
   );
 }

@@ -57,11 +57,15 @@ export default function Dashboard() {
             to={link}
             className="bg-white rounded-xl shadow-sm p-4 border border-gray-100 hover:shadow-md transition-shadow"
           >
-            <div className={`w-12 h-12 rounded-lg ${color} flex items-center justify-center mb-3`}>
-              <Icon className="text-white" size={24} />
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <p className="text-2xl font-bold text-gray-900">{value}</p>
+                <p className="text-gray-500 text-sm">{label}</p>
+              </div>
+              <div className={`w-12 h-12 rounded-lg ${color} flex items-center justify-center shrink-0`}>
+                <Icon className="text-white" size={24} />
+              </div>
             </div>
-            <p className="text-2xl font-bold text-gray-900">{value}</p>
-            <p className="text-gray-500 text-sm">{label}</p>
           </Link>
         ))}
       </div>

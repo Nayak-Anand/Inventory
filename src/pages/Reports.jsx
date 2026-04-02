@@ -58,40 +58,70 @@ export default function Reports() {
 
       <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
         <div className="bg-white rounded-xl shadow-sm p-4 border border-gray-100">
-          <div className="flex items-center gap-2 text-green-500 mb-2">
-            <TrendingUp size={24} />
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <p className="text-2xl font-bold text-gray-900">₹{totalRevenue.toLocaleString('en-IN')}</p>
+              <p className="text-sm text-gray-500">Total Revenue</p>
+            </div>
+            <div className="w-12 h-12 rounded-lg bg-green-500 flex items-center justify-center shrink-0">
+              <TrendingUp size={24} className="text-white" />
+            </div>
           </div>
-          <p className="text-2xl font-bold text-gray-900">₹{totalRevenue.toLocaleString('en-IN')}</p>
-          <p className="text-sm text-gray-500">Total Revenue</p>
         </div>
         <div className="bg-white rounded-xl shadow-sm p-4 border border-gray-100">
-          <p className="text-2xl font-bold text-green-600">₹{receivedAmount.toLocaleString('en-IN')}</p>
-          <p className="text-sm text-gray-500">Received</p>
-        </div>
-        <div className="bg-white rounded-xl shadow-sm p-4 border border-gray-100">
-          <p className="text-2xl font-bold text-amber-600">₹{pendingAmount.toLocaleString('en-IN')}</p>
-          <p className="text-sm text-gray-500">Pending</p>
-        </div>
-        <div className="bg-white rounded-xl shadow-sm p-4 border border-gray-100">
-          <div className="flex items-center gap-2 text-blue-500 mb-2">
-            <FileText size={24} />
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <p className="text-2xl font-bold text-green-600">₹{receivedAmount.toLocaleString('en-IN')}</p>
+              <p className="text-sm text-gray-500">Received</p>
+            </div>
+            <div className="w-12 h-12 rounded-lg bg-green-500 flex items-center justify-center shrink-0">
+              <BarChart3 size={24} className="text-white" />
+            </div>
           </div>
-          <p className="text-2xl font-bold text-gray-900">{totalInvoices}</p>
-          <p className="text-sm text-gray-500">Total Invoices</p>
         </div>
         <div className="bg-white rounded-xl shadow-sm p-4 border border-gray-100">
-          <div className="flex items-center gap-2 text-purple-500 mb-2">
-            <BarChart3 size={24} />
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <p className="text-2xl font-bold text-amber-600">₹{pendingAmount.toLocaleString('en-IN')}</p>
+              <p className="text-sm text-gray-500">Pending</p>
+            </div>
+            <div className="w-12 h-12 rounded-lg bg-amber-500 flex items-center justify-center shrink-0">
+              <BarChart3 size={24} className="text-white" />
+            </div>
           </div>
-          <p className="text-2xl font-bold text-gray-900">₹{avgOrderValue.toFixed(0)}</p>
-          <p className="text-sm text-gray-500">Avg Order Value</p>
         </div>
         <div className="bg-white rounded-xl shadow-sm p-4 border border-gray-100">
-          <div className="flex items-center gap-2 text-amber-500 mb-2">
-            <BarChart3 size={24} />
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <p className="text-2xl font-bold text-gray-900">{totalInvoices}</p>
+              <p className="text-sm text-gray-500">Total Invoices</p>
+            </div>
+            <div className="w-12 h-12 rounded-lg bg-blue-500 flex items-center justify-center shrink-0">
+              <FileText size={24} className="text-white" />
+            </div>
           </div>
-          <p className="text-2xl font-bold text-gray-900">{lowStockCount}</p>
-          <p className="text-sm text-gray-500">Low Stock Items</p>
+        </div>
+        <div className="bg-white rounded-xl shadow-sm p-4 border border-gray-100">
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <p className="text-2xl font-bold text-gray-900">₹{avgOrderValue.toFixed(0)}</p>
+              <p className="text-sm text-gray-500">Avg Order Value</p>
+            </div>
+            <div className="w-12 h-12 rounded-lg bg-purple-500 flex items-center justify-center shrink-0">
+              <BarChart3 size={24} className="text-white" />
+            </div>
+          </div>
+        </div>
+        <div className="bg-white rounded-xl shadow-sm p-4 border border-gray-100">
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <p className="text-2xl font-bold text-gray-900">{lowStockCount}</p>
+              <p className="text-sm text-gray-500">Low Stock Items</p>
+            </div>
+            <div className="w-12 h-12 rounded-lg bg-amber-500 flex items-center justify-center shrink-0">
+              <BarChart3 size={24} className="text-white" />
+            </div>
+          </div>
         </div>
       </div>
 

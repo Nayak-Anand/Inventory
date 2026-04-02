@@ -11,7 +11,14 @@ export class CategoryService {
   ) {}
 
   async create(orgId: string, data: Partial<Category>) {
-    const c = new this.categoryModel({ ...data, orgId });
+    const c = new this.categoryModel({
+      orgId,
+      name: data.name,
+      description: data.description,
+      parentId: data.parentId,
+      sortOrder: data.sortOrder,
+      isActive: data.isActive,
+    });
     return c.save();
   }
 
@@ -27,7 +34,11 @@ export class CategoryService {
   async update(orgId: string, id: string, data: Partial<Category>) {
     const c = await this.categoryModel.findOne({ _id: id, orgId }).exec();
     if (!c) throw new BadRequestException('Category not found');
-    Object.assign(c, data);
+    if (data.name !== undefined) c.name = data.name;
+    if (data.description !== undefined) c.description = data.description;
+    if (data.parentId !== undefined) c.parentId = data.parentId;
+    if (data.sortOrder !== undefined) c.sortOrder = data.sortOrder as any;
+    if (data.isActive !== undefined) c.isActive = data.isActive as any;
     return c.save();
   }
 

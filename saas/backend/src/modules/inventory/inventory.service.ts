@@ -50,6 +50,9 @@ export class InventoryService {
     refType?: string,
     refId?: string,
   ) {
+    if (!Number.isFinite(quantity) || quantity <= 0) {
+      throw new BadRequestException('Quantity must be greater than 0');
+    }
     await this.ledgerModel.create({
       orgId,
       warehouseId,
@@ -69,6 +72,9 @@ export class InventoryService {
     refType?: string,
     refId?: string,
   ) {
+    if (!Number.isFinite(quantity) || quantity <= 0) {
+      throw new BadRequestException('Quantity must be greater than 0');
+    }
     const current = await this.getStock(orgId, warehouseId, itemId);
     if (current < quantity) {
       throw new BadRequestException(`Insufficient stock. Available: ${current}`);

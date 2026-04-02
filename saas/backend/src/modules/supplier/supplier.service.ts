@@ -11,7 +11,14 @@ export class SupplierService {
   ) {}
 
   async create(orgId: string, data: Partial<Supplier>) {
-    const s = new this.supplierModel({ ...data, orgId });
+    const s = new this.supplierModel({
+      orgId,
+      name: data.name,
+      email: data.email,
+      phone: data.phone,
+      address: data.address,
+      gstin: data.gstin,
+    });
     return s.save();
   }
 
@@ -23,7 +30,11 @@ export class SupplierService {
   async update(orgId: string, id: string, data: Partial<Supplier>) {
     const s = await this.supplierModel.findOne({ _id: id, orgId }).exec();
     if (!s) throw new BadRequestException('Supplier not found');
-    Object.assign(s, data);
+    if (data.name !== undefined) s.name = data.name;
+    if (data.email !== undefined) s.email = data.email;
+    if (data.phone !== undefined) s.phone = data.phone;
+    if (data.address !== undefined) s.address = data.address;
+    if (data.gstin !== undefined) s.gstin = data.gstin;
     return s.save();
   }
 

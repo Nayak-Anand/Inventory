@@ -35,6 +35,12 @@ export class OrderService {
     let taxAmount = 0;
     const lines = await Promise.all(
       (data.items || []).map(async (it: any) => {
+        if (!Number.isFinite(it.quantity) || it.quantity <= 0) {
+          throw new BadRequestException('Item quantity must be greater than 0');
+        }
+        if (!Number.isFinite(it.rate) || it.rate < 0) {
+          throw new BadRequestException('Item rate must be 0 or greater');
+        }
         const item = await this.inventoryService.getItem(orgId, it.itemId);
         const gstRate = item?.gstRate ?? 18;
         const amount = (it.quantity || 0) * (it.rate || 0);

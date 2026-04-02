@@ -3,6 +3,7 @@ import { JwtService } from '@nestjs/jwt';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import * as bcrypt from 'bcryptjs';
+import * as crypto from 'crypto';
 import { User, UserDocument } from '../../models/user.schema';
 import { Role, RoleDocument } from '../../models/role.schema';
 import { TenantService } from '../tenant/tenant.service';
@@ -223,26 +224,27 @@ export class AuthService {
       throw new UnauthorizedException('Password reset is only available for company admin accounts. Please contact your administrator.');
     }
     
-    // Generate reset token (6-digit code)
-    const resetToken = Math.floor(100000 + Math.random() * 900000).toString();
+    // Generate a high-entropy reset token and store only a hash.
+    const resetToken = crypto.randomBytes(32).toString('hex');
+    const resetTokenHash = crypto.createHash('sha256').update(resetToken).digest('hex');
     const resetTokenExpiry = new Date();
     resetTokenExpiry.setHours(resetTokenExpiry.getHours() + 1); // Valid for 1 hour
     
-    user.resetToken = resetToken;
+    user.resetToken = resetTokenHash;
     user.resetTokenExpiry = resetTokenExpiry;
     await user.save();
     
-    // In production, send via email/SMS. For now, return token (admin can share it)
-    return { 
-      message: 'Reset token generated successfully.',
-      resetToken, // Remove this in production, send via email/SMS instead
-      expiresIn: '1 hour'
+    // In production, deliver the token via email/SMS. Never return it in the API response.
+    return {
+      message: 'If the account exists, a reset token has been generated.',
+      expiresIn: '1 hour',
     };
   }
 
   async resetPassword(resetToken: string, newPassword: string) {
+    const resetTokenHash = crypto.createHash('sha256').update(resetToken).digest('hex');
     const user = await this.userModel.findOne({ 
-      resetToken,
+      resetToken: resetTokenHash,
       resetTokenExpiry: { $gt: new Date() }
     }).select('+passwordHash').exec();
     

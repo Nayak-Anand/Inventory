@@ -5,7 +5,7 @@ import { RequirePermissions } from '../../common/decorators/require-permissions.
 import { PermissionsGuard } from '../../common/guards/permissions.guard';
 import { InventoryService } from './inventory.service';
 import { WarehouseService } from '../warehouse/warehouse.service';
-import { IsNumber, IsOptional, IsString } from 'class-validator';
+import { IsNumber, IsOptional, IsString, Min } from 'class-validator';
 
 class CreateItemDto {
   @IsString()
@@ -25,10 +25,12 @@ class CreateItemDto {
 
   @IsOptional()
   @IsNumber()
+  @Min(0)
   price?: number;
 
   @IsOptional()
   @IsNumber()
+  @Min(0)
   gstRate?: number;
 
   @IsOptional()
@@ -37,10 +39,12 @@ class CreateItemDto {
 
   @IsOptional()
   @IsNumber()
+  @Min(0)
   reorderLevel?: number;
 
   @IsOptional()
   @IsNumber()
+  @Min(0)
   initialStock?: number;
 }
 
@@ -59,14 +63,17 @@ class UpdateItemDto {
 
   @IsOptional()
   @IsNumber()
+  @Min(0)
   price?: number;
 
   @IsOptional()
   @IsNumber()
+  @Min(0)
   gstRate?: number;
 
   @IsOptional()
   @IsNumber()
+  @Min(0)
   reorderLevel?: number;
 }
 

@@ -32,9 +32,32 @@ export class SalesService {
   }
 
   async createCustomer(orgId: string, data: Partial<Customer> & { avatar?: string }): Promise<any> {
-    const { avatar: avatarData, ...rest } = data;
+    const {
+      avatar: avatarData,
+      name,
+      email,
+      phone,
+      address,
+      gstin,
+      placeOfSupply,
+      stateCode,
+      creditLimit,
+      userId,
+    } = data;
     const avatar = await this.processAvatar(avatarData);
-    const c = new this.customerModel({ ...rest, orgId, ...(avatar && { avatar }) });
+    const c = new this.customerModel({
+      orgId,
+      name,
+      email,
+      phone,
+      address,
+      gstin,
+      placeOfSupply,
+      stateCode,
+      creditLimit,
+      userId,
+      ...(avatar && { avatar }),
+    });
     const saved = await c.save();
     const out = saved.toObject ? saved.toObject() : saved;
     return { ...out, id: (out as any)._id?.toString() };
@@ -57,8 +80,15 @@ export class SalesService {
     if (data.avatar !== undefined) {
       (c as any).avatar = data.avatar === '' ? undefined : (await this.processAvatar(data.avatar) ?? (c as any).avatar);
     }
-    const { avatar: _a, ...rest } = data;
-    Object.assign(c, rest);
+    if (data.name !== undefined) c.name = data.name;
+    if (data.email !== undefined) c.email = data.email;
+    if (data.phone !== undefined) c.phone = data.phone;
+    if (data.address !== undefined) c.address = data.address;
+    if (data.gstin !== undefined) c.gstin = data.gstin;
+    if (data.placeOfSupply !== undefined) c.placeOfSupply = data.placeOfSupply;
+    if (data.stateCode !== undefined) c.stateCode = data.stateCode;
+    if (data.creditLimit !== undefined) c.creditLimit = data.creditLimit as any;
+    if (data.userId !== undefined) c.userId = data.userId;
     await c.save();
     const out = c.toObject ? c.toObject() : c;
     return { ...out, id: (out as any)._id?.toString() };
@@ -96,6 +126,15 @@ export class SalesService {
     const lines: Array<{ itemId: string; itemName: string; quantity: number; unit: string; rate: number; amount: number; taxAmount: number }> = [];
     let subtotal = 0;
     for (const it of data.items) {
+      if (!Number.isFinite(it.quantity) || it.quantity <= 0) {
+        throw new BadRequestException('Item quantity must be greater than 0');
+      }
+      if (!Number.isFinite(it.rate) || it.rate < 0) {
+        throw new BadRequestException('Item rate must be 0 or greater');
+      }
+      if (data.gstRate !== undefined && (!Number.isFinite(data.gstRate) || data.gstRate < 0)) {
+        throw new BadRequestException('GST rate must be 0 or greater');
+      }
       const amount = it.quantity * it.rate;
       subtotal += amount;
       lines.push({
@@ -160,6 +199,12 @@ export class SalesService {
 
     let totalTax = 0;
     const lines = (order.lines || []).map((l) => {
+      if (!Number.isFinite(l.quantity) || l.quantity <= 0) {
+        throw new BadRequestException('Order quantity must be greater than 0');
+      }
+      if (!Number.isFinite(l.rate) || l.rate < 0) {
+        throw new BadRequestException('Order rate must be 0 or greater');
+      }
       const gstRate = applyGst ? (l.gstRate ?? 18) : 0;
       const lineTax = (l.amount * gstRate) / 100;
       totalTax += lineTax;
@@ -205,6 +250,9 @@ export class SalesService {
     await invoice.save();
 
     for (const line of order.lines || []) {
+      if (!Number.isFinite(line.quantity) || line.quantity <= 0) {
+        throw new BadRequestException('Order quantity must be greater than 0');
+      }
       await this.inventoryService.reduceStock(orgId, whId, line.itemId, line.quantity, 'sale', invoice._id.toString());
     }
 
